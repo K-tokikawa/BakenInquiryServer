@@ -18,12 +18,12 @@ export default class JRADayBettingtohyoClass extends JRABettingRaceResultClass {
 
     public SetDic(value: DicDayRascetohyo) { this.dic = value }
     public SetDicDay(key: string, value: { [key: string | number]: JRABettingRaceResultClass }) {
-        let temp = this.dic as { [key: string | number]: dictionary }
+        const temp = this.dic as { [key: string | number]: dictionary }
         temp[key] = value
         this.SetDic(temp)
     }
     public SetDicRace(keyDate: string, keyRace: string, value: JRABettingRaceResultClass) {
-        let temp = this.dic as { [key: string | number]: { [key: string | number]: JRABettingRaceResultClass } }
+        const temp = this.dic as { [key: string | number]: { [key: string | number]: JRABettingRaceResultClass } }
         temp[keyDate][keyRace] = value
         this.SetDic(temp)
     }

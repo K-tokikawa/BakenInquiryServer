@@ -217,42 +217,4 @@ export default class JRABettingRaceResultClass {
     public get CountReturn三連複() { return this.countReturn三連複}
     public get CountReturn三連単() { return this.countReturn三連単}
     public get CountReturnTotal() { return this.countReturnTotal }
-
-    public stringrow() { return `${this.totalBet単勝},
-             ${this.totalBet複勝},
-             ${this.totalBet馬連},
-             ${this.totalBet枠連},
-             ${this.totalBet馬単},
-             ${this.totalBetワイド},
-             ${this.totalBet三連複},
-             ${this.totalBet三連単},
-             ${this.totalBet},
-             ${this.totalReturn単勝},
-             ${this.totalReturn複勝},
-             ${this.totalReturn馬連},
-             ${this.totalReturn枠連},
-             ${this.totalReturn馬単},
-             ${this.totalReturnワイド},
-             ${this.totalReturn三連複},
-             ${this.totalReturn三連単},
-             ${this.totalReturn},
-             ${this.countBet単勝},
-             ${this.countBet複勝},
-             ${this.countBet馬連},
-             ${this.countBet枠連},
-             ${this.countBet馬単},
-             ${this.countBetワイド},
-             ${this.countBet三連複},
-             ${this.countBet三連単},
-             ${this.countBetTotal},
-             ${this.countReturn単勝},
-             ${this.countReturn複勝},
-             ${this.countReturn馬連},
-             ${this.countReturn枠連},
-             ${this.countReturn馬単},
-             ${this.countReturnワイド},
-             ${this.countReturn三連複},
-             ${this.countReturn三連単},
-             ${this.countReturnTotal}`}
-
 }
