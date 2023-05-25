@@ -1,6 +1,6 @@
 import JRABettingRaceResultClass from "./JRABettingRaceResultClass"
 import JRADayBettingtohyoClass from "./JRADayBettingtohyoClass"
-interface DicDayRascetohyo {
+export interface DicDayRascetohyo {
     readonly [key: string | number]: JRADayBettingtohyoClass
 }
 export default class JRATotalBettingtohyoClass extends JRABettingRaceResultClass {

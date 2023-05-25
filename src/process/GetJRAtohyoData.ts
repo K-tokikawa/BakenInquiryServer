@@ -5,6 +5,7 @@ import { AxiosBase } from '../class/AxiosBase'
 import AxiosResponseClass from '../class/AxiosResponseClass'
 import JRATotalBettingtohyoClass from '../class/JRATotalBettingtohyoClass'
 import JRADayBettingtohyoClass from '../class/JRADayBettingtohyoClass'
+import CreateTreeRoot from './CreateTreeRoot'
 
 export default async function process(jsessionid: string, m: string) {
     const csvdata: [string[]] = await GetJRAtohyoCSVData(jsessionid, m)
@@ -90,7 +91,7 @@ async function DayRaceResult(lstJRAtohyo: JRAtohyoClass[]) {
         dic.SetDicRace(日付, daydic)
     })
     dic.CalcBetandHitCount()
-    return dic
+    return CreateTreeRoot(dic)
 }
 
 function DetailResult(row: JRAtohyoClass, dictotal: JRATotalBettingtohyoClass, dic: JRADayBettingtohyoClass, レース: string) {
