@@ -3,6 +3,7 @@ import JRAtohyoClass from '../class/JRAtohyoClass'
 import JRABettingRaceResultClass from '../class/JRABettingRaceResultClass'
 import { AxiosBase } from '../class/AxiosBase'
 import AxiosResponseClass from '../class/AxiosResponseClass'
+import JRATotalBettingtohyoClass from '../class/JRATotalBettingtohyoClass'
 import JRADayBettingtohyoClass from '../class/JRADayBettingtohyoClass'
 
 export default async function process(jsessionid: string, m: string) {
@@ -75,30 +76,25 @@ function GetJRAtohyoData(csvdata: [string[]]) {
 }
 
 async function DayRaceResult(lstJRAtohyo: JRAtohyoClass[]) {
-    const dic: JRADayBettingtohyoClass = new JRADayBettingtohyoClass()
+    const dic: JRATotalBettingtohyoClass = new JRATotalBettingtohyoClass()
+    let daydic: JRADayBettingtohyoClass
     lstJRAtohyo.forEach((row: JRAtohyoClass) => {
         const 日付 = row.日付
         const レース = row.日付 + row.場名 + row.レース
-
         if (dic.Dic[日付] == undefined) {
-            dic.SetDicDay(日付, {})
-            dic.SetDicRace(日付, レース, new JRABettingRaceResultClass())
-            dic.SetDicRace(日付, レース, DetailResult(row, dic, 日付, レース)) 
-        } else {
-            if (dic.Dic[日付][レース] == undefined) {
-                dic.SetDicRace(日付, レース, new JRABettingRaceResultClass())
-                dic.SetDicRace(日付, レース, DetailResult(row, dic, 日付, レース)) 
-            } else {
-                dic.SetDicRace(日付, レース, DetailResult(row, dic, 日付, レース)) 
-            }
+            dic.initDicDay(日付)
+            daydic = new JRADayBettingtohyoClass()
         }
+        daydic.SetDicRace(レース, new JRABettingRaceResultClass())
+        daydic.SetDicRace(レース, DetailResult(row, dic, daydic, レース)) 
+        dic.SetDicRace(日付, daydic)
     })
-    dic.CalcBetandHitRace()
+    console.log(dic.Dic)
     return dic
 }
 
-function DetailResult(row: JRAtohyoClass, dic: JRADayBettingtohyoClass, 日付: string, レース: string) {
-    const dicResult: JRABettingRaceResultClass = dic.Dic[日付][レース]
+function DetailResult(row: JRAtohyoClass, dictotal: JRATotalBettingtohyoClass, dic: JRADayBettingtohyoClass, レース: string) {
+    const dicResult = dic.Dic[レース]
 
     const 式別 = row.式別
     const 払戻金額 = Number(row.払戻_返還金額)
@@ -118,11 +114,17 @@ function DetailResult(row: JRAtohyoClass, dic: JRADayBettingtohyoClass, 日付: 
     dicResult.addcountBetTotal(購入点数)
     dic.addcountReturnTotal((的中点数))
     dic.addcountBetTotal(購入点数)
+    dictotal.addcountReturnTotal((的中点数))
+    dictotal.addcountBetTotal(購入点数)
+
 
     dicResult.addReturnTotal(払戻金額)
     dicResult.addBetTotal(購入金額)
     dic.addReturnTotal(払戻金額)
     dic.addBetTotal(購入金額)
+    dictotal.addReturnTotal(払戻金額)
+    dictotal.addBetTotal(購入金額)
+
     if (式別.search(JRABettingRaceResultClass.search単勝) == 0) {
         dicResult.addReturn単勝(払戻金額)
         dicResult.addcountReturn単勝(的中点数)
@@ -133,6 +135,11 @@ function DetailResult(row: JRAtohyoClass, dic: JRADayBettingtohyoClass, 日付: 
         dic.addcountReturn単勝(的中点数)
         dic.addBet単勝(購入金額)
         dic.addcountBet単勝(購入点数)
+
+        dictotal.addReturn単勝(払戻金額)
+        dictotal.addcountReturn単勝(的中点数)
+        dictotal.addBet単勝(購入金額)
+        dictotal.addcountBet単勝(購入点数)
 
     } else if (式別.search(JRABettingRaceResultClass.search複勝) == 0) {
         dicResult.addReturn複勝(払戻金額)
@@ -145,6 +152,11 @@ function DetailResult(row: JRAtohyoClass, dic: JRADayBettingtohyoClass, 日付: 
         dic.addBet複勝(購入金額)
         dic.addcountBet複勝(購入点数)
 
+        dictotal.addReturn複勝(払戻金額)
+        dictotal.addcountReturn複勝(的中点数)
+        dictotal.addBet複勝(購入金額)
+        dictotal.addcountBet複勝(購入点数)
+
     } else if (式別.search(JRABettingRaceResultClass.search馬連) == 0) {
         dicResult.addReturn馬連(払戻金額)
         dicResult.addcountReturn馬連(的中点数)
@@ -155,6 +167,11 @@ function DetailResult(row: JRAtohyoClass, dic: JRADayBettingtohyoClass, 日付: 
         dic.addcountReturn馬連(的中点数)
         dic.addBet馬連(購入金額)
         dic.addcountBet馬連(購入点数)
+
+        dictotal.addReturn馬連(払戻金額)
+        dictotal.addcountReturn馬連(的中点数)
+        dictotal.addBet馬連(購入金額)
+        dictotal.addcountBet馬連(購入点数)
 
     } else if (式別.search(JRABettingRaceResultClass.search馬単) == 0) {
         dicResult.addReturn馬単(払戻金額)
@@ -167,6 +184,11 @@ function DetailResult(row: JRAtohyoClass, dic: JRADayBettingtohyoClass, 日付: 
         dic.addBet馬単(購入金額)
         dic.addcountBet馬単(購入点数)
 
+        dictotal.addReturn馬単(払戻金額)
+        dictotal.addcountReturn馬単(的中点数)
+        dictotal.addBet馬単(購入金額)
+        dictotal.addcountBet馬単(購入点数)
+
     } else if (式別.search(JRABettingRaceResultClass.searchワイド) == 0) {
         dicResult.addReturnワイド(払戻金額)
         dicResult.addcountReturnワイド(的中点数)
@@ -177,6 +199,11 @@ function DetailResult(row: JRAtohyoClass, dic: JRADayBettingtohyoClass, 日付: 
         dic.addcountReturnワイド(的中点数)
         dic.addBetワイド(購入金額)
         dic.addcountBetワイド(購入点数)
+
+        dictotal.addReturnワイド(払戻金額)
+        dictotal.addcountReturnワイド(的中点数)
+        dictotal.addBetワイド(購入金額)
+        dictotal.addcountBetワイド(購入点数)
 
     } else if (式別.search(JRABettingRaceResultClass.search枠連) == 0) {
         dicResult.addReturn枠連(払戻金額)
@@ -189,6 +216,11 @@ function DetailResult(row: JRAtohyoClass, dic: JRADayBettingtohyoClass, 日付: 
         dic.addBet枠連(購入金額)
         dic.addcountBet枠連(購入点数)
 
+        dictotal.addReturn枠連(払戻金額)
+        dictotal.addcountReturn枠連(的中点数)
+        dictotal.addBet枠連(購入金額)
+        dictotal.addcountBet枠連(購入点数)
+
     } else if (式別.search(JRABettingRaceResultClass.search三連複) == 0) {
         dicResult.addReturn三連複(払戻金額)
         dicResult.addcountReturn三連複(的中点数)
@@ -200,6 +232,11 @@ function DetailResult(row: JRAtohyoClass, dic: JRADayBettingtohyoClass, 日付: 
         dic.addBet三連複(購入金額)
         dic.addcountBet三連複(購入点数)
 
+        dictotal.addReturn三連複(払戻金額)
+        dictotal.addcountReturn三連複(的中点数)
+        dictotal.addBet三連複(購入金額)
+        dictotal.addcountBet三連複(購入点数)
+
     } else if (式別.search(JRABettingRaceResultClass.search三連単) == 0) {
         dicResult.addReturn三連単(払戻金額)
         dicResult.addcountReturn三連単(的中点数)
@@ -210,6 +247,11 @@ function DetailResult(row: JRAtohyoClass, dic: JRADayBettingtohyoClass, 日付: 
         dic.addcountReturn三連単(的中点数)
         dic.addBet三連単(購入金額)
         dic.addcountBet三連単(購入点数)
+
+        dictotal.addReturn三連単(払戻金額)
+        dictotal.addcountReturn三連単(的中点数)
+        dictotal.addBet三連単(購入金額)
+        dictotal.addcountBet三連単(購入点数)
 
     } else {
         console.log(式別)
