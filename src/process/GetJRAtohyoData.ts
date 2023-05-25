@@ -89,7 +89,7 @@ async function DayRaceResult(lstJRAtohyo: JRAtohyoClass[]) {
         daydic.SetDicRace(レース, DetailResult(row, dic, daydic, レース)) 
         dic.SetDicRace(日付, daydic)
     })
-    console.log(dic.Dic)
+    dic.CalcBetandHitCount()
     return dic
 }
 

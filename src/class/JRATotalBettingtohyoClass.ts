@@ -26,5 +26,14 @@ export default class JRATotalBettingtohyoClass extends JRABettingRaceResultClass
         this.SetDic(temp)
     }
 
+    public CalcBetandHitCount() {
+        Object.keys(this.dic).forEach((key: string) => {
+            const dayvalue = this.dic[key]
+            dayvalue.CalcBetandHitCount()
+            this.betrace += dayvalue.Betrace
+            this.hitrace += dayvalue.Hitrace
+        })
+    }
+
     public get Dic() { return this.dic }
 }
