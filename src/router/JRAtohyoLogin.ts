@@ -6,7 +6,6 @@ router.post('/JRAtohyoLogin', function (req, res, next) {
     const UID: number = Number(req.body.UID)
     const PWD: number = Number(req.body.PWD)
     const PARS: number = Number(req.body.PARS)
-
     process(UID, PWD, PARS)
         .then(result => {
             res.send(result)

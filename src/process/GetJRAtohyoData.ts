@@ -86,7 +86,9 @@ async function DayRaceResult(lstJRAtohyo: JRAtohyoClass[]) {
             dic.initDicDay(日付)
             daydic = new JRADayBettingtohyoClass()
         }
-        daydic.SetDicRace(レース, new JRABettingRaceResultClass())
+        if (daydic.Dic[レース] == undefined) {
+            daydic.SetDicRace(レース, new JRABettingRaceResultClass())
+        }
         daydic.SetDicRace(レース, DetailResult(row, dic, daydic, レース)) 
         dic.SetDicRace(日付, daydic)
     })

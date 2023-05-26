@@ -3,7 +3,6 @@ import AxiosResponseClass from '../class/AxiosResponseClass'
 
 export default async function process(UID: number, PWD: number, PARS: number) {
     console.log(`access:UID ${UID} PWD ${PWD} PARS ${PARS}`)
-
     return await JRAtohyoLogin(UID, PWD, PARS)
 }
 

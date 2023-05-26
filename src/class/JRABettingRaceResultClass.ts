@@ -48,12 +48,31 @@ export default class JRABettingRaceResultClass {
     private countReturn三連単: number
     private countReturnTotal: number
 
+    protected countBet単勝race: number
+    protected countBet複勝race: number
+    protected countBet馬連race: number
+    protected countBet枠連race: number
+    protected countBet馬単race: number
+    protected countBetワイドrace: number
+    protected countBet三連複race: number
+    protected countBet三連単race: number
+    protected countBetTotalrace: number
+
+    protected countReturn単勝race: number
+    protected countReturn複勝race: number
+    protected countReturn馬連race: number
+    protected countReturn枠連race: number
+    protected countReturn馬単race: number
+    protected countReturnワイドrace: number
+    protected countReturn三連複race: number
+    protected countReturn三連単race: number
+    protected countReturnTotalrace: number
+
     public addAll(value: JRABettingRaceResultClass) {
         this.addReturn(value)
         this.addcountReturn(value)
         this.addBet(value)
         this.addcountBet(value)
-
     }
     public addBet単勝(val: number) { this.totalBet単勝 += val }
     public addBet複勝(val: number) { this.totalBet複勝 += val }
@@ -139,6 +158,25 @@ export default class JRABettingRaceResultClass {
         this.addcountReturnTotal(value.CountReturnTotal)
     }
 
+    public addcountReturn単勝race() { this.countReturn単勝race++ }
+    public addcountReturn複勝race() { this.countReturn複勝race++ }
+    public addcountReturn馬連race() { this.countReturn馬連race++ }
+    public addcountReturn枠連race() { this.countReturn枠連race++ }
+    public addcountReturn馬単race() { this.countReturn馬単race++ }
+    public addcountReturnワイドrace() { this.countReturnワイドrace++ }
+    public addcountReturn三連複race() { this.countReturn三連複race++ }
+    public addcountReturn三連単race() { this.countReturn三連単race++ }
+    public addcountReturnTotalrace() { this.countReturnTotalrace++ }
+    public addcountBet単勝race() { this.countBet単勝race++ }
+    public addcountBet複勝race() { this.countBet複勝race++ }
+    public addcountBet馬連race() { this.countBet馬連race++ }
+    public addcountBet枠連race() { this.countBet枠連race++ }
+    public addcountBet馬単race() { this.countBet馬単race++ }
+    public addcountBetワイドrace() { this.countBetワイドrace++ }
+    public addcountBet三連複race() { this.countBet三連複race++ }
+    public addcountBet三連単race() { this.countBet三連単race++ }
+    public addcountBetTotalrace() { this.countBetTotalrace++ }
+
     constructor() {
         this.totalBet単勝 = 0
         this.totalBet複勝 = 0
@@ -178,6 +216,25 @@ export default class JRABettingRaceResultClass {
         this.countReturn三連複 = 0
         this.countReturn三連単 = 0
         this.countReturnTotal = 0
+
+        this.countReturn単勝race = 0
+        this.countReturn複勝race = 0
+        this.countReturn馬連race = 0
+        this.countReturn枠連race = 0
+        this.countReturn馬単race = 0
+        this.countReturnワイドrace = 0
+        this.countReturn三連複race = 0
+        this.countReturn三連単race = 0
+        this.countReturnTotalrace = 0
+        this.countBet単勝race = 0
+        this.countBet複勝race = 0
+        this.countBet馬連race = 0
+        this.countBet枠連race = 0
+        this.countBet馬単race = 0
+        this.countBetワイドrace = 0
+        this.countBet三連複race = 0
+        this.countBet三連単race = 0
+        this.countBetTotalrace = 0
     }
 
     public get TotalBet単勝() { return this.totalBet単勝 }
@@ -217,4 +274,23 @@ export default class JRABettingRaceResultClass {
     public get CountReturn三連複() { return this.countReturn三連複}
     public get CountReturn三連単() { return this.countReturn三連単}
     public get CountReturnTotal() { return this.countReturnTotal }
+
+    public get CountReturn単勝race() { return this.countReturn単勝race}
+    public get CountReturn複勝race() { return this.countReturn複勝race}
+    public get CountReturn馬連race() { return this.countReturn馬連race}
+    public get CountReturn枠連race() { return this.countReturn枠連race}
+    public get CountReturn馬単race() { return this.countReturn馬単race}
+    public get CountReturnワイドrace() { return this.countReturnワイドrace}
+    public get CountReturn三連複race() { return this.countReturn三連複race}
+    public get CountReturn三連単race() { return this.countReturn三連単race}
+    public get CountReturnTotalrace() { return this.countReturnTotalrace}
+    public get CountBet単勝race() { return this.countBet単勝race}
+    public get CountBet複勝race() { return this.countBet複勝race}
+    public get CountBet馬連race() { return this.countBet馬連race}
+    public get CountBet枠連race() { return this.countBet枠連race}
+    public get CountBet馬単race() { return this.countBet馬単race}
+    public get CountBetワイドrace() { return this.countBetワイドrace}
+    public get CountBet三連複race() { return this.countBet三連複race}
+    public get CountBet三連単race() { return this.countBet三連単race}
+    public get CountBetTotalrace() { return this.countBetTotalrace}
 }

@@ -4,8 +4,10 @@ export interface IFInquiryTreeNode {
         "項目": string
         "TotalBet": string
         "TotalReturn": string
+        "ReturnRate": string
         "CountBet": string
         "CountReturn": string
+        "HitRate": string
     }
 }
 
@@ -15,8 +17,10 @@ export interface IFInquiryParentTreeNode {
         "項目": string
         "TotalBet": string
         "TotalReturn": string
+        "ReturnRate": string
         "CountBet": string
         "CountReturn": string
+        "HitRate": string
     },
     children: IFInquiryTreeNode[]
 }
