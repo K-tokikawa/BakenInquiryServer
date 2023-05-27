@@ -5,8 +5,10 @@ const router: express.Router = express.Router();
 router.post('/GetJRAtohyoData', function (req, res, next) {
     const jsessionid: string = req.body.jsessionid
     const m: string = req.body.m
+    const mindate: string = req.body.mindate
+    const maxdate: string = req.body.maxdate
 
-    process(jsessionid, m)
+    process(jsessionid, m, mindate, maxdate)
         .then(result => {
             res.send(result)
         })
