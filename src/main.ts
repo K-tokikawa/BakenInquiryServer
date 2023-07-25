@@ -7,7 +7,7 @@ export const app = express()
 app.use(bodyparser.urlencoded({ extended: false }));
 app.use(bodyparser.json());
 app.use(function (req, res, next) {
-    res.set("Access-Control-Allow-Origin", 'http://localhost:9099');
+    res.set("Access-Control-Allow-Origin", 'http://192.168.102.163:9099');
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     res.header("Access-Control-Allow-Credentials", 'true');
     next();

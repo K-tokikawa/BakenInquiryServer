@@ -27,16 +27,24 @@ async function GetJRAtohyoCSVData(jsessionid: string, m: string) {
         .filter(row => row.match(/name="DATE"/))
         .forEach(row => {
             (p = p.then(async() => {
-                const date = row.match(/(?<="DATE" value=").*?(?=")/)?.[0]
-                const m = row.match(/(?<="m" value=").*?(?=")/)?.[0]
-                if (typeof (date) == 'string' && typeof (m) == 'string') {
-                    const axios030 = new AxiosBase('https://www.nvinq.jra.go.jp/jra/servlet/JRAWeb030')
-                    await axios030.POST({ DATE: date, FROM: '020', m: m }, { headers: headers, withCredentials: true })
-                    const axios = new AxiosBase('https://www.nvinq.jra.go.jp/jra/servlet/JRACSVDownload')
-                    const rescsv = await axios.POST({ DATE: date, FROM: '030', m: m, DLTYPE: 1 }, { headers: headers, responseType: 'arraybuffer', withCredentials: true })
-                    const axiosrescsv = rescsv as AxiosResponseClass
-                    const csv = iconv.decode(Buffer.from(axiosrescsv.Data), 'Shift_JIS').split('\n')
-                    csvdata.push(csv)
+                const csvdate = row.match(/(?<="DATE" value=").*?(?=")/)?.[0]
+                console.log(csvdate)
+
+                const date = new Date(`${csvdate?.substring(0, 4)}-${csvdate?.substring(4, 6)}-${csvdate?.substring(6, 8)}`)
+                const mindate = new Date('2023-06-16')
+                if (date >= mindate)
+                {
+                    console.log(date)
+                    const m = row.match(/(?<="m" value=").*?(?=")/)?.[0]
+                    if (typeof (csvdate) == 'string' && typeof (m) == 'string') {
+                        const axios030 = new AxiosBase('https://www.nvinq.jra.go.jp/jra/servlet/JRAWeb030')
+                        await axios030.POST({ DATE: csvdate, FROM: '020', m: m }, { headers: headers, withCredentials: true })
+                        const axios = new AxiosBase('https://www.nvinq.jra.go.jp/jra/servlet/JRACSVDownload')
+                        const rescsv = await axios.POST({ DATE: csvdate, FROM: '030', m: m, DLTYPE: 1 }, { headers: headers, responseType: 'arraybuffer', withCredentials: true }) as AxiosResponseClass
+                        const axiosrescsv = rescsv
+                        const csv = iconv.decode(Buffer.from(axiosrescsv.Data), 'Shift_JIS').split('\n')
+                        csvdata.push(csv)
+                    }
                 }
             })
             )

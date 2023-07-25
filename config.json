@@ -1,0 +1,17 @@
+{
+    "DATABASE": {
+        "server": "localhost",
+        "authentication": {
+            "type": "default",
+            "options": {
+                "userName": "sa",
+                "password": "alte"
+            }
+        },
+        "options": {
+            "requestTimeout": 1000000,
+            "encrypt": false,
+            "database": "Keiba"
+        }
+    }
+}
