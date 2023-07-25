@@ -29,7 +29,7 @@ async function GetRaceWeek() {
 
             const sqlDay = new GetVenueMaxDay(Year, VenueNum, Hold)
             const lstDay = await sqlDay.Execsql()
-            const Day = lstDay[0].Day
+            const Day = lstDay[0].Day + 2
             let strDay = Day + 1 < 10 ? `0${Day + 1}` : `${Day + 1}`
 
             // 開催が合っているかの確認
@@ -41,7 +41,7 @@ async function GetRaceWeek() {
             const pageElement = iconv.decode(page, 'eucjp')
             if (!pageElement.match(/RaceName/)) {
                 strHold = Hold + 1 < 10 ? `0${Hold + 1}` : `${Hold + 1}`
-                strDay = '01'
+                strDay = '02'
             }
 
             const Rounds = ['01','02','03','04','05','06','07','08','09','10','11','12']
@@ -53,7 +53,48 @@ async function GetRaceWeek() {
                 const pageElement = iconv.decode(page, 'eucjp')
                 if (pageElement.match(/RaceName/)) {
                     const pages = pageElement.split('\n')
-
+                    FileUtil.OutputFile(pages, `${RaceID}.txtt`)
+                    let range = 0
+                    let ground = 0
+                    let direction = 0
+                    for (const line of pages) {
+                        if (line.match(/span class="Turf"/)) {
+                            // 距離
+                            if (line.match(/\d{4}/)) {
+                                range = Number(line.match(/\d{4}/)?.[0])
+                            }
+                            // 芝orダート
+                            if (line.match(/芝/)) {
+                                ground = 1
+                            } else if (line.match(/ダ/)) {
+                                ground = 2
+                            } else if (line.match(/障/)) {
+                                ground = 3
+                            }
+                    
+                            // 向き
+                            if (line.match(/右/)) {
+                                direction = 1
+                            } else if (line.match(/左/)) {
+                                direction = 2
+                            } else if (line.match(/直線/)) {
+                                direction = 3
+                            }
+                            return [range, ground, direction]
+                        }
+                        if (line.match(/晴/)) {
+                            return 1
+                        }
+                        if (line.match(/曇/)) {
+                            return 2
+                        }
+                        if (line.match(/雨/)) {
+                            return 3
+                        }
+                        if (line.match(/雪/)) {
+                            return 3
+                        }
+                    }
                 }
             }
         }
@@ -61,3 +102,60 @@ async function GetRaceWeek() {
     return true
 }
 
+function PageAnalysis(pages: string[]) {
+    let range = 0
+    let ground = 0
+    let direction = 0
+    let weather = 0
+    let grouncondition = 0
+    for (const line of pages) {
+        if (line.match(/span class="Turf"/)) {
+            // 距離
+            if (line.match(/\d{4}/)) {
+                range = Number(line.match(/\d{4}/)?.[0])
+            }
+            // 芝orダート
+            if (line.match(/芝/)) {
+                ground = 1
+            } else if (line.match(/ダ/)) {
+                ground = 2
+            } else if (line.match(/障/)) {
+                ground = 3
+            }
+    
+            // 向き
+            if (line.match(/右/)) {
+                direction = 1
+            } else if (line.match(/左/)) {
+                direction = 2
+            } else if (line.match(/直線/)) {
+                direction = 3
+            }
+        }
+        if (line.match(/晴/)) {
+            weather = 1
+        }
+        if (line.match(/曇/)) {
+            weather = 2
+        }
+        if (line.match(/雨/)) {
+            weather = 3
+        }
+        if (line.match(/雪/)) {
+            weather = 4
+        }
+
+        if (line.match(/良/)){
+            grouncondition = 1
+        }
+        if (line.match(/稍/)){
+            grouncondition = 2
+        }
+        if (line.match(/重/)){
+            grouncondition = 3
+        }
+        if (line.match(/不/)){
+            grouncondition = 4
+        }
+    }
+}
