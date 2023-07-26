@@ -4,8 +4,6 @@ import EntRaceHorseStudyData from "../sql/Entity/EntRaceHorseStudyData"
 import ClassAchievementData from "../class/ClassAchievementData"
 import ClassHorseData from "../class/ClassHorseData"
 import simpleProgress from "../process/ProgressBar"
-import { skip } from "node:test"
-import GetRegisteredPredictDataID from "../sql/query/GetRegisteredPredictDataID"
 
 export default class MgrRaceData{
     private m_RaceData: EntRaceHorseStudyData[]
@@ -112,14 +110,12 @@ export default class MgrRaceData{
                 const RaceHorseData = entitys[num].RotationData
                 const RaceID = entitys[num].RaceID
 
-                if (!this.m_PredictRaceID.includes(RaceID)) skip;
+                if (!this.m_PredictRaceID.includes(RaceID)) continue;
 
                 // Rotation
                 let data = ''
                 if (RaceHorseData.length > 0) {
-                    let a = 0
                     for (const value of RaceHorseData){
-                        a++
                         if (data == ''){
                             data += `${HorseID},${RaceID}`
                         } else {

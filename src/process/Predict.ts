@@ -12,6 +12,7 @@ import GetRotationData from "../sql/query/GetRotationData"
 import simpleProgress, { multiProgress } from "./ProgressBar"
 import { PythonShell } from "python-shell"
 import GetRaceHorseInfomationData from "../sql/query/GetRaceHorseInfomationData"
+import FileUtil from "../FileUtil"
 
 export default async function CreateRacePredictData(value: EntRaceInfomationData[]) {
     const ProgressBar = simpleProgress()
@@ -126,7 +127,7 @@ export default async function CreateRacePredictData(value: EntRaceInfomationData
         }
         dicAptitude[data.RaceID][data.HorseID] = {Aptitude: `${data.AveragePassage1},${data.AveragePassage2},${data.AveragePassage3},${data.AveragePassage4}`}
     }
-
+    console.log(dicAptitude)
     const Achievementsql = new GetAchievementData(param)
     const Achievement = await Achievementsql.Execsql() as EntAchievementData[]
     const dicAchievement: {
@@ -189,7 +190,6 @@ export default async function CreateRacePredictData(value: EntRaceInfomationData
             const JockeyData = `Jockey,0,${Horsevalue.Jockey},${Horsevalue.HorseGender},${info.Venue},${info.Range},${info.Ground},${info.GroundCondition},${Horsevalue.HorseNo},${Horsevalue.HorseAge},${info.HoldMonth},${info.Weather},${Horsevalue.Popularity},${Horsevalue.Weight},${info.Hold},${info.Day},${info.Round}`
             const blood = blooddata[HorseID]
             const BloodData = `blood,0,${info.Range},${info.Venue},${info.Ground},${info.GroundCondition},${Horsevalue.HorseGender},${Horsevalue.Weight},${Horsevalue.HorseAge},${blood}`
-
             const Aptitude = dicAptitude[RaceID][HorseID]
             const Rotation = dicRotation[RaceID][HorseID]
             const Achievement = dicAchievement[RaceID][HorseID]
@@ -197,6 +197,7 @@ export default async function CreateRacePredictData(value: EntRaceInfomationData
             const rowAptitude = `aptitude,0,${info.Venue},${info.Range},${info.Weather}.${info.Ground},${info.GroundCondition},${info.HoldMonth},${info.Hold},${Horsevalue.HorseNo},${info.Day},${Horsevalue.Weight},${Horsevalue.TrainerID},${Horsevalue.HorseGender},${Horsevalue.HorseWeight},${Horsevalue.Fluctuation},${Horsevalue.Jockey},${Horsevalue.HorseAge},${Aptitude.Aptitude},${blood}`
             const rowRotation = `rotation,0,${info.Direction},${info.Venue},${info.HoldMonth},${info.Hold},${info.Day},${info.Range},${info.Ground},${info.GroundCondition},${info.Weather},${Horsevalue.Weight},${Horsevalue.TrainerID},${Horsevalue.HorseGender},${Horsevalue.HorseWeight},${Horsevalue.HorseNo},${Horsevalue.HorseAge},${Horsevalue.Fluctuation},${Horsevalue.Jockey},0,${Rotation.Rotation}`
             const rowAchievement = `achievement,0,${info.Venue},${info.Range},${info.Ground},${Horsevalue.HorseAge},${info.GroundCondition},${info.HoldMonth},${info.Hold},${info.Day},${info.Weather},${Horsevalue.Weight},${Horsevalue.TrainerID},${Horsevalue.HorseGender},${Horsevalue.HorseWeight},${Horsevalue.HorseNo},${Horsevalue.Fluctuation},${Horsevalue.Jockey},${Achievement.Achievement}`
+
             const [Blood, Jockey, preAchievement, preRotation, preAptitude] = await Promise.all([
                     Predict(BloodData),
                     Predict(JockeyData),
