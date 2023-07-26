@@ -16,6 +16,10 @@ import GetRaceInfomationData from '../sql/query/GetRaceInfomationData'
 import CreateRacePredictData from './Predict'
 import PrmStudyData from '../sql/param/PrmStudyData'
 import EntRaceInfomationData from '../sql/Entity/EntRaceInfomationData'
+import MgrRaceData from '../Manager/MgrRaceData'
+import GetRaceHorseStudyData from '../sql/query/GetRaceHorseStudyData'
+import EntRaceHorseStudyData from '../sql/Entity/EntRaceHorseStudyData'
+import BulkInsert from '../sql/query/BulkInsert'
 export default async function process(Year: number, Month: number, HoldDay: number) {
     const predictRaceID = await GetRaceWeek(Year, Month, HoldDay)
     const temppredictRaceID = [
@@ -45,6 +49,20 @@ export default async function process(Year: number, Month: number, HoldDay: numb
         127600
     ]
     const param = new PrmStudyData(temppredictRaceID)
+    /** 予測用のデータ作ってDBに登録 */
+    const studydatasql = new GetRaceHorseStudyData(param)
+    const studydata = await studydatasql.Execsql() as EntRaceHorseStudyData[]
+    const mgr = new MgrRaceData(studydata, temppredictRaceID)
+    await mgr.dicCreate()
+    const insertDic = mgr.insertDic
+    const Achievement = new BulkInsert(insertDic.strAchievement, 'AchievementTable')
+    await Achievement.BulkInsert('AchievementTable')
+    const Aptitude = new BulkInsert(insertDic.strPassage, 'AptitudeTable')
+    await Aptitude.BulkInsert('AptitudeTable')
+    const Rotation = new BulkInsert(insertDic.data, 'RotationTable')
+    await Rotation.BulkInsert('RotationTable')
+
+    /**DBに登録した予測用のデータで予測を行う */
     const sql = new GetRaceInfomationData(param)
     const value = await sql.Execsql() as EntRaceInfomationData[]
     const rows = await CreateRacePredictData(value)
