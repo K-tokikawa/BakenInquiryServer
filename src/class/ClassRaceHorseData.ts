@@ -1,4 +1,4 @@
-import EntRaceStudyData from "../entity/EntRaceHorseStudyData"
+import EntRaceHorseStudyData from "../sql/Entity/EntRaceHorseStudyData"
 
 export default class ClassRaceHorseData{
     private m_GoalTime: number
@@ -28,7 +28,7 @@ export default class ClassRaceHorseData{
     private m_JockeyID: number
     private m_before: number
     private m_HoldDay: Date
-    constructor(row: EntRaceStudyData, before: number){
+    constructor(row: EntRaceHorseStudyData, before: number){
         this.m_GoalTime = row.GoalTime
         this.m_Direction = row.Direction
         this.m_Venue = row.Venue
