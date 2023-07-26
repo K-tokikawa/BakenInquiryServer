@@ -7,14 +7,20 @@ import JRATotalBettingtohyoClass from '../class/JRATotalBettingtohyoClass'
 import JRADayBettingtohyoClass from '../class/JRADayBettingtohyoClass'
 import CreateTreeRoot from './CreateTreeRoot'
 
-export default async function process(jsessionid: string, m: string) {
-    const csvdata: [string[]] = await GetJRAtohyoCSVData(jsessionid, m)
+export default async function process(jsessionid: string, m: string, mindate: string, maxdate: string) {
+    const min = DateFormat(mindate)
+    const max = DateFormat(maxdate)
+    const csvdata: [string[]] = await GetJRAtohyoCSVData(jsessionid, m, min, max)
 
     const lstJRAtohyo: JRAtohyoClass[] = GetJRAtohyoData(csvdata)
     return DayRaceResult(lstJRAtohyo)
 }
 
-async function GetJRAtohyoCSVData(jsessionid: string, m: string) {
+function DateFormat(date: string){
+    return new Date(`${date.slice(0, 3)}-${date.slice(4, 5)}-${date.slice(6, 7)}`)
+}
+
+async function GetJRAtohyoCSVData(jsessionid: string, m: string, mindate: Date, maxdate: Date) {
     const headers = { "Content-Type": "application/x-www-form-urlencoded", "Cookie": `JSESSIONID=${jsessionid}` }
     // セッションで使用されているCookieを取得
     const axios020 = new AxiosBase('https://www.nvinq.jra.go.jp/jra/servlet/JRAWeb020')
@@ -25,6 +31,14 @@ async function GetJRAtohyoCSVData(jsessionid: string, m: string) {
     const csvdata: [string[]] = [[]]
     data.split('JRAWeb030')
         .filter(row => row.match(/name="DATE"/))
+        .filter(row => {
+            const date = DateFormat(`${row.match(/(?<="DATE" value=").*?(?=")/)?.[0]}`)
+            if (mindate <= date && date <= maxdate){
+                return true
+            } else {
+                return false
+            }
+        })
         .forEach(row => {
             (p = p.then(async() => {
                 const csvdate = row.match(/(?<="DATE" value=").*?(?=")/)?.[0]
