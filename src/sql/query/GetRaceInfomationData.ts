@@ -36,7 +36,7 @@ from RaceInfomation as RI
     ) as RHI
         on RHI.RaceID = RI.ID
 where
-    RI.ID in ${this.parameter?.IDs}
+    RI.ID in (${this.parameter?.IDs})
     and RI.Direction is not null`
         return await this.ExecGet(sql)
     }

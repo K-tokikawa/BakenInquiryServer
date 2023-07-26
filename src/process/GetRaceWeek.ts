@@ -1,4 +1,3 @@
-import FileUtil from '../FileUtil'
 import { AxiosBase } from '../class/AxiosBase'
 import iconv from 'iconv-lite'
 import ClassRace from '../class/ClassRace'
@@ -19,10 +18,37 @@ import PrmStudyData from '../sql/param/PrmStudyData'
 import EntRaceInfomationData from '../sql/Entity/EntRaceInfomationData'
 export default async function process(Year: number, Month: number, HoldDay: number) {
     const predictRaceID = await GetRaceWeek(Year, Month, HoldDay)
-    const param = new PrmStudyData(predictRaceID)
+    const temppredictRaceID = [
+        125983,
+        125984,
+        125985,
+        125986,
+        125987,
+        125988,
+        125989,
+        125990,
+        125991,
+        125992,
+        125993,
+        125994,
+        127589,
+        127590,
+        127591,
+        127592,
+        127593,
+        127594,
+        127595,
+        127596,
+        127597,
+        127598,
+        127599,
+        127600
+    ]
+    const param = new PrmStudyData(temppredictRaceID)
     const sql = new GetRaceInfomationData(param)
     const value = await sql.Execsql() as EntRaceInfomationData[]
     const rows = await CreateRacePredictData(value)
+    console.log(rows)
 }
 
 async function GetRaceWeek(Year: number, Month: number, HoldDay: number) {
@@ -35,7 +61,7 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number) {
     const page = await axios.GET() as Buffer
     const pageElement = iconv.decode(page, 'eucjp')
 
-    const predictRaceID = []
+    const predictRaceID: number[] = []
     for (const strkey of Object.keys(ClassRace.VaneuMatch)) {
         const VenueNum = Number(strkey)
         if (pageElement.match(ClassRace.VaneuMatch[VenueNum])) {

@@ -1,5 +1,5 @@
-import SQLBase from "../SQLBase"
-import EntRotationData from "../entity/EntRotationData"
+import SQLBase from "../../class/SQLBase"
+import EntRotationData from "../Entity/EntRotationData"
 import PrmStudyData from "../param/PrmStudyData"
 export default class GetRotationData extends SQLBase<EntRotationData[]>
 {
