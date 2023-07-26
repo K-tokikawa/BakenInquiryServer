@@ -20,27 +20,19 @@ export default class MgrRaceData{
         data: string[],
         strPassage: string[]
     }
-    private m_updateDic: {
-        strAchievement: string[],
-        data: string[],
-        strPassage: string[]
-    }
+
     constructor(RaceData: EntRaceHorseStudyData[], PredictRaceID: number[]) {
         this.m_RaceData = RaceData
         this.m_PredictRaceID = PredictRaceID
         this.m_dic = {}
         this.m_insertDic = {strAchievement: [], data: [], strPassage: []}
-        this.m_updateDic = {strAchievement: [], data: [], strPassage: []}
     }
 
     public get dic(){return this.m_dic}
     public get insertDic() { return this.m_insertDic }
-    public get updateDic() { return this.m_updateDic }
 
     async dicCreate(){
         return new Promise (async (resolve) => {
-            const sql = new GetRegisteredPredictDataID()
-            const RegisteredRaceIDs = (await sql.Execsql()).map(x => {return x.RaceID})
             const dic = this.m_dic
             console.log('start')
             const ProgressBar = simpleProgress()
@@ -91,24 +83,24 @@ export default class MgrRaceData{
                 HorseIDs.push(HorseID)
                 if (HorseIDs.length % 5 == 0){
                     await Promise.all([
-                        this.CreateRacePredict(HorseIDs[0], RegisteredRaceIDs),
-                        this.CreateRacePredict(HorseIDs[1], RegisteredRaceIDs),
-                        this.CreateRacePredict(HorseIDs[2], RegisteredRaceIDs),
-                        this.CreateRacePredict(HorseIDs[3], RegisteredRaceIDs),
-                        this.CreateRacePredict(HorseIDs[4], RegisteredRaceIDs),
+                        this.CreateRacePredict(HorseIDs[0]),
+                        this.CreateRacePredict(HorseIDs[1]),
+                        this.CreateRacePredict(HorseIDs[2]),
+                        this.CreateRacePredict(HorseIDs[3]),
+                        this.CreateRacePredict(HorseIDs[4]),
                     ])
                     HorseIDs = [] // 再度初期化
                 }
             }
             // あまり
             for (const id of HorseIDs) {
-                await this.CreateRacePredict(id, RegisteredRaceIDs)
+                await this.CreateRacePredict(id)
             }
             resolve(true)
         })
     }
 
-    async CreateRacePredict(HorseID: number, RegisteredRaceIDs: number[]){
+    async CreateRacePredict(HorseID: number){
         return new Promise(async (resolve) =>{
             const dic = this.m_dic
             const horseData = dic[HorseID].data
@@ -199,16 +191,9 @@ export default class MgrRaceData{
                         strAchievement += `,${achievement.GoalTime},${achievement.Weight},${achievement.before}`
                     }
                 }
-                if (!RegisteredRaceIDs.includes(RaceID)) {
-                    this.m_insertDic.strAchievement.push(strAchievement)
-                    this.m_insertDic.data.push(data)
-                    this.m_insertDic.strPassage.push(strPassage)
-                } else {
-                    this.m_updateDic.strAchievement.push(strAchievement)
-                    this.m_updateDic.data.push(data)
-                    this.m_updateDic.strPassage.push(strPassage)
-                }
-
+                this.m_insertDic.strAchievement.push(strAchievement)
+                this.m_insertDic.data.push(data)
+                this.m_insertDic.strPassage.push(strPassage)
             }
             resolve(true)
         })

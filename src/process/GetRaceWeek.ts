@@ -20,6 +20,7 @@ import MgrRaceData from '../Manager/MgrRaceData'
 import GetRaceHorseStudyData from '../sql/query/GetRaceHorseStudyData'
 import EntRaceHorseStudyData from '../sql/Entity/EntRaceHorseStudyData'
 import BulkInsert from '../sql/query/BulkInsert'
+import DeletePredictRecord from '../sql/query/DeletePredictRecord'
 export default async function process(Year: number, Month: number, HoldDay: number) {
     const predictRaceID = await GetRaceWeek(Year, Month, HoldDay)
     const temppredictRaceID = [
@@ -54,6 +55,8 @@ export default async function process(Year: number, Month: number, HoldDay: numb
     const studydata = await studydatasql.Execsql() as EntRaceHorseStudyData[]
     const mgr = new MgrRaceData(studydata, temppredictRaceID)
     await mgr.dicCreate()
+    const deletesql = new DeletePredictRecord(param)
+    await deletesql.Execsql()
     const insertDic = mgr.insertDic
     const Achievement = new BulkInsert(insertDic.strAchievement, 'AchievementTable')
     await Achievement.BulkInsert('AchievementTable')
