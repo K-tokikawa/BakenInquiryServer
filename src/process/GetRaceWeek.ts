@@ -5,12 +5,27 @@ import ClassRace from '../class/ClassRace'
 import GetVenueMaxHold from '../sql/query/GetVenueMaxHold'
 import GetVenueMaxDay from '../sql/query/GetVenueMaxDay'
 import ClassHorse from '../class/ClassHorse'
+import PrmRaceInfo from '../sql/param/PrmRaceInfo'
+import PrmRegisterRaceHorseInfo from '../sql/param/PrmRegisterRaceHorseInfo'
+import SQLRegisterRaceHorseInfo from '../sql/query/SQLRegisterRaceHorseInfo'
+import SQLRegisterRaceInfo from '../sql/query/SQLRegisterRaceInfo'
+import PrmGetSYSTEMCurrentID from '../sql/param/PrmGetSYSTEMCurrentID'
+import GetSYSTEMCurrentID from '../sql/query/SQLGetSYSTEMCurrentID'
+import EntSYSTEMCurrentID from '../sql/Entity/EntSYSTEMCurrentID'
+import asEnumrable from 'linq-es5'
+import GetRaceInfomationData from '../sql/query/GetRaceInfomationData'
+import CreateRacePredictData from './Predict'
+import PrmStudyData from '../sql/param/PrmStudyData'
+import EntRaceInfomationData from '../sql/Entity/EntRaceInfomationData'
 export default async function process(Year: number, Month: number, HoldDay: number) {
-    return await GetRaceWeek(Year, Month, HoldDay)
+    const predictRaceID = await GetRaceWeek(Year, Month, HoldDay)
+    const param = new PrmStudyData(predictRaceID)
+    const sql = new GetRaceInfomationData(param)
+    const value = await sql.Execsql() as EntRaceInfomationData[]
+    const rows = await CreateRacePredictData(value)
 }
 
 async function GetRaceWeek(Year: number, Month: number, HoldDay: number) {
-    const date = new Date()
     const strMonth = Month < 10 ? `0${Month}` : `${Month}`
     const strDay = HoldDay < 10 ? `0${HoldDay}` : `${HoldDay}`
     const dateID = `${Year}${strMonth}${strDay}`
@@ -19,6 +34,8 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number) {
     const axios: AxiosBase = new AxiosBase(url)
     const page = await axios.GET() as Buffer
     const pageElement = iconv.decode(page, 'eucjp')
+
+    const predictRaceID = []
     for (const strkey of Object.keys(ClassRace.VaneuMatch)) {
         const VenueNum = Number(strkey)
         if (pageElement.match(ClassRace.VaneuMatch[VenueNum])) {
@@ -29,13 +46,15 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number) {
 
             const sqlDay = new GetVenueMaxDay(Year, VenueNum, Hold)
             const lstDay = await sqlDay.Execsql()
+
             const Day = lstDay[0].Day - 1
+
             let strDay = Day + 1 < 10 ? `0${Day + 1}` : `${Day + 1}`
 
             // 開催が合っているかの確認
             // 11Rなのはページが用意されている確率が高いから
-            const RaceID = `${Year}${ClassRace.VenueCode[VenueNum]}${strHold}${strDay}11`
-            const memberurl = `https://race.netkeiba.com/race/shutuba.html?race_id=${RaceID}&rf=race_submenu`
+            const checkRaceID = `${Year}${ClassRace.VenueCode[VenueNum]}${strHold}${strDay}11`
+            const memberurl = `https://race.netkeiba.com/race/shutuba.html?race_id=${checkRaceID}&rf=race_submenu`
             const axios: AxiosBase = new AxiosBase(memberurl)
             const page = await axios.GET() as Buffer
             const pageElement = iconv.decode(page, 'eucjp')
@@ -46,22 +65,76 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number) {
             }
 
             const Rounds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ,12]
+            const raceparam: PrmRaceInfo[] = []
+            const horseparam: PrmRegisterRaceHorseInfo[] = []
+
+            const idparam = new PrmGetSYSTEMCurrentID(null)
+            const idsql = new GetSYSTEMCurrentID(idparam)
+            const ids = await idsql.Execsql() as EntSYSTEMCurrentID[]
+
+            let RaceHorseID: number = asEnumrable(ids)
+                .Where(x => x.ID == 3)
+                .Select(x => x.CurrentID)
+                .FirstOrDefault()
+            let RaceID: number = asEnumrable(ids)
+                .Where(x => x.ID == 2)
+                .Select(x => x.CurrentID)
+                .FirstOrDefault()
             for (const Round of Rounds) {
+                RaceID++
                 const strRound = Round < 10 ? `0${Round}` : `${Round}`
                 const VenueCode = ClassRace.VenueCode[VenueNum]
-                const RaceID = `${Year}${VenueCode}${strHold}${strDay}${strRound}`
-                const memberurl = `https://race.netkeiba.com/race/shutuba.html?race_id=${RaceID}&rf=race_submenu`
+                const strRaceID = `${Year}${VenueCode}${strHold}${strDay}${strRound}`
+                const memberurl = `https://race.netkeiba.com/race/shutuba.html?race_id=${strRaceID}&rf=race_submenu`
                 const axios: AxiosBase = new AxiosBase(memberurl)
                 const page = await axios.GET() as Buffer
                 const pageElement = iconv.decode(page, 'eucjp')
                 if (pageElement.match(/RaceName/)) {
+                    predictRaceID.push(RaceID)
                     const pages = pageElement.split('\n')
-                    const racedata: ClassRace = PageAnalysis(pages, 0, RaceID, VenueCode, Year, Hold, Day, Month, HoldDay, Round)
+                    const racedata: ClassRace = PageAnalysis(pages, 0, strRaceID, VenueCode, Year, Hold, Day, Month, HoldDay, Round)
+
+                    const param = new PrmRaceInfo(RaceID, strRaceID, VenueCode, Year, Hold, Day, Round, racedata.Range, racedata.Direction, racedata.Ground, racedata.Weather, racedata.GroundCondition, Month, HoldDay)
+                    raceparam.push(param)
+
+                    for (const horse of racedata.Horse) {
+                        const Horseparam = new PrmRegisterRaceHorseInfo(
+                            RaceHorseID++,
+                            RaceID,
+                            strRaceID,
+                            null,
+                            null,
+                            0,
+                            horse.netkeibaID,
+                            horse.GateNo,
+                            horse.HorseNo,
+                            horse.HorseAge,
+                            horse.HorseGender,
+                            horse.Weight,
+                            horse.JockeyID,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            horse.Popularity,
+                            horse.HorseWeight,
+                            horse.Fluctuation,
+                            horse.Barn,
+                            horse.TrainerID,
+                        )
+                        horseparam.push(Horseparam)
+                    }
                 }
             }
+            const horsesql = new SQLRegisterRaceHorseInfo(horseparam)
+            // await horsesql.BulkInsert('Horse')
+            const racesql = new SQLRegisterRaceInfo(raceparam)
+            // await racesql.BulkInsert('Race')
         }
     }
-    return true
+    return predictRaceID
 }
 
 function PageAnalysis(pages: string[], ID: number, RaceID: string, Venue: string, Year: number, Hold: number, Day: number, HoldMonth: number, HoldDay: number, Round: number) {
