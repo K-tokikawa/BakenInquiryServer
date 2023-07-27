@@ -13,7 +13,7 @@ import GetSYSTEMCurrentID from '../sql/query/SQLGetSYSTEMCurrentID'
 import EntSYSTEMCurrentID from '../sql/Entity/EntSYSTEMCurrentID'
 import asEnumrable from 'linq-es5'
 import GetRaceInfomationData from '../sql/query/GetRaceInfomationData'
-import CreateRacePredictData from './Predict'
+import CreateRacePredictData, { Predict } from './Predict'
 import PrmStudyData from '../sql/param/PrmStudyData'
 import EntRaceInfomationData from '../sql/Entity/EntRaceInfomationData'
 import MgrRaceData from '../Manager/MgrRaceData'
@@ -22,6 +22,9 @@ import EntRaceHorseStudyData from '../sql/Entity/EntRaceHorseStudyData'
 import BulkInsert from '../sql/query/BulkInsert'
 import DeletePredictRecord from '../sql/query/DeletePredictRecord'
 import GetHorseIDs from '../sql/query/GetHorseIDs'
+import FileUtil from '../FileUtil'
+import AxiosResponseClass from '../class/AxiosResponseClass'
+import { PythonShell } from 'python-shell'
 export default async function process(Year: number, Month: number, HoldDay: number) {
     const predictRaceID = await GetRaceWeek(Year, Month, HoldDay)
     const temppredictRaceID = [
@@ -39,32 +42,49 @@ export default async function process(Year: number, Month: number, HoldDay: numb
         127781
     ]
     const param = new PrmStudyData(temppredictRaceID)
-    /** 予測用のデータ作ってDBに登録 */
-    const HorseIDsql = new GetHorseIDs(param)
-    const horseIDs = (await HorseIDsql.Execsql()).map(x => {return x.HorseID})
-    const studyparam = new PrmStudyData(horseIDs)
-    const studydatasql = new GetRaceHorseStudyData(studyparam)
-    const studydata = await studydatasql.Execsql() as EntRaceHorseStudyData[]
-    const mgr = new MgrRaceData(studydata, temppredictRaceID)
-    await mgr.dicCreate()
-    const deletesql = new DeletePredictRecord(param)
-    await deletesql.Execsql()
-    const insertDic = mgr.insertDic
-    console.log(Object.keys(mgr.insertDic.strAchievement).length)
-    console.log(Object.keys(mgr.insertDic.strPassage).length)
-    console.log(Object.keys(mgr.insertDic.data).length)
-    const Achievement = new BulkInsert(insertDic.strAchievement, 'AchievementTable')
-    await Achievement.BulkInsert('AchievementTable_')
-    const Aptitude = new BulkInsert(insertDic.strPassage, 'AptitudeTable')
-    await Aptitude.BulkInsert('AptitudeTable_')
-    const Rotation = new BulkInsert(insertDic.data, 'RotationTable')
-    await Rotation.BulkInsert('RotationTable_')
+    // /** 予測用のデータ作ってDBに登録 */
+    // const HorseIDsql = new GetHorseIDs(param)
+    // const horseIDs = (await HorseIDsql.Execsql()).map(x => {return x.HorseID})
+    // const studyparam = new PrmStudyData(horseIDs)
+    // const studydatasql = new GetRaceHorseStudyData(studyparam)
+    // const studydata = await studydatasql.Execsql() as EntRaceHorseStudyData[]
+    // const mgr = new MgrRaceData(studydata, temppredictRaceID)
+    // await mgr.dicCreate()
+    // const deletesql = new DeletePredictRecord(param)
+    // await deletesql.Execsql()
+    // const insertDic = mgr.insertDic
+    // console.log(Object.keys(mgr.insertDic.strAchievement).length)
+    // console.log(Object.keys(mgr.insertDic.strPassage).length)
+    // console.log(Object.keys(mgr.insertDic.data).length)
+    // const Achievement = new BulkInsert(insertDic.strAchievement, 'AchievementTable')
+    // await Achievement.BulkInsert('AchievementTable_')
+    // const Aptitude = new BulkInsert(insertDic.strPassage, 'AptitudeTable')
+    // await Aptitude.BulkInsert('AptitudeTable_')
+    // const Rotation = new BulkInsert(insertDic.data, 'RotationTable')
+    // await Rotation.BulkInsert('RotationTable_')
+    const shell = new PythonShell('./src/python/whilepredict.py')
 
-    // /**DBに登録した予測用のデータで予測を行う */
+    // // /**DBに登録した予測用のデータで予測を行う */
     const sql = new GetRaceInfomationData(param)
     const value = await sql.Execsql() as EntRaceInfomationData[]
-    const rows = await CreateRacePredictData(value)
+    const rows = await CreateRacePredictData(value, shell)
     console.log(rows)
+    const result: {
+        [RaceID: number]: {
+            [HorseNo: number] :number
+        }
+    } = {}
+    for (const strkey of Object.keys(rows)) {
+        const RaceID = Number(strkey)
+        result[RaceID] = {}
+        for (const strHorseNo of Object.keys(rows[RaceID])) {
+            const HorseNo = Number(strHorseNo)
+            const row = rows[RaceID][HorseNo]
+            const predict = await Predict(row, shell) as number
+            result[RaceID][HorseNo] = predict
+        }
+        console.log(result)
+    }
 }
 
 async function GetRaceWeek(Year: number, Month: number, HoldDay: number) {
@@ -130,6 +150,7 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number) {
                 const memberurl = `https://race.netkeiba.com/race/shutuba.html?race_id=${strRaceID}&rf=race_submenu`
                 const axios: AxiosBase = new AxiosBase(memberurl)
                 const page = await axios.GET() as Buffer
+                
                 const pageElement = iconv.decode(page, 'eucjp')
                 if (pageElement.match(/RaceName/)) {
                     predictRaceID.push(RaceID)
