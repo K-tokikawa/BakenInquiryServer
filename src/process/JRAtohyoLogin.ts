@@ -11,7 +11,6 @@ async function JRAtohyoLogin(UID: number, PWD: number, PARS: number) {
     const res010 = await axios010.POST({ UID: UID, PWD: PWD, PARS: PARS, FROM: '000' }, { headers: { "Content-Type": "application/x-www-form-urlencoded" }, withCredentials: true, })
     const axiosres010 = res010 as AxiosResponseClass
     const data010 = axiosres010.Data
-    console.log(data010)
     let value = ''
     let jsessionid = ''
     if (typeof (data010) == 'string') {

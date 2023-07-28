@@ -1,6 +1,7 @@
 export default class EntRaceHorseInfomationData{
     public RaceID: number
     public HorseID: number
+    public Name: string
     public Rank: number
     public HorseNo: number
     public JockeyID: number
@@ -15,6 +16,7 @@ export default class EntRaceHorseInfomationData{
     constructor(){
         this.RaceID = 0
         this.HorseID = 0
+        this.Name = ''
         this.Rank = 0
         this.HorseNo = 0
         this.JockeyID = 0

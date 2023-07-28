@@ -22,71 +22,76 @@ import EntRaceHorseStudyData from '../sql/Entity/EntRaceHorseStudyData'
 import BulkInsert from '../sql/query/BulkInsert'
 import DeletePredictRecord from '../sql/query/DeletePredictRecord'
 import GetHorseIDs from '../sql/query/GetHorseIDs'
-import FileUtil from '../FileUtil'
-import AxiosResponseClass from '../class/AxiosResponseClass'
 import { PythonShell } from 'python-shell'
-export default async function process(Year: number, Month: number, HoldDay: number) {
-    const predictRaceID = await GetRaceWeek(Year, Month, HoldDay)
-    const temppredictRaceID = [
-        127792,
-        127791,
-        127790,
-        127789,
-        127788,
-        127787,
-        127786,
-        127785,
-        127784,
-        127783,
-        127782,
-        127781
-    ]
-    const param = new PrmStudyData(temppredictRaceID)
-    // /** 予測用のデータ作ってDBに登録 */
-    // const HorseIDsql = new GetHorseIDs(param)
-    // const horseIDs = (await HorseIDsql.Execsql()).map(x => {return x.HorseID})
-    // const studyparam = new PrmStudyData(horseIDs)
-    // const studydatasql = new GetRaceHorseStudyData(studyparam)
-    // const studydata = await studydatasql.Execsql() as EntRaceHorseStudyData[]
-    // const mgr = new MgrRaceData(studydata, temppredictRaceID)
-    // await mgr.dicCreate()
-    // const deletesql = new DeletePredictRecord(param)
-    // await deletesql.Execsql()
-    // const insertDic = mgr.insertDic
-    // console.log(Object.keys(mgr.insertDic.strAchievement).length)
-    // console.log(Object.keys(mgr.insertDic.strPassage).length)
-    // console.log(Object.keys(mgr.insertDic.data).length)
-    // const Achievement = new BulkInsert(insertDic.strAchievement, 'AchievementTable')
-    // await Achievement.BulkInsert('AchievementTable_')
-    // const Aptitude = new BulkInsert(insertDic.strPassage, 'AptitudeTable')
-    // await Aptitude.BulkInsert('AptitudeTable_')
-    // const Rotation = new BulkInsert(insertDic.data, 'RotationTable')
-    // await Rotation.BulkInsert('RotationTable_')
-    const shell = new PythonShell('./src/python/whilepredict.py')
+import {IFPredictParentTreeNode, IFPredictTreeNode} from '../IF/IFPredictTreeNode'
+import InitRaceInfomation from '../sql/query/InitRaceInfomation'
 
+export default async function process(Year: number, Month: number, HoldDay: number, shell: PythonShell) {
+    const predictRaceID = await GetRaceWeek(Year, Month, HoldDay)
+    console.log(predictRaceID)
+    const param = new PrmStudyData(predictRaceID)
     // // /**DBに登録した予測用のデータで予測を行う */
     const sql = new GetRaceInfomationData(param)
     const value = await sql.Execsql() as EntRaceInfomationData[]
-    const rows = await CreateRacePredictData(value, shell)
-    console.log(rows)
-    const result: {
-        [RaceID: number]: {
-            [HorseNo: number] :number
-        }
-    } = {}
-    for (const strkey of Object.keys(rows)) {
-        const RaceID = Number(strkey)
-        result[RaceID] = {}
-        for (const strHorseNo of Object.keys(rows[RaceID])) {
-            const HorseNo = Number(strHorseNo)
-            const row = rows[RaceID][HorseNo]
-            const predict = await Predict(row, shell) as number
-            result[RaceID][HorseNo] = predict
-        }
-        console.log(result)
-    }
+    const predictdata = await CreateRacePredictData(value, shell)
+    return await GetNodeTree(predictdata, shell)
+
 }
 
+async function GetNodeTree(
+    predictdata: {
+        [RaceID: number]: {
+            Round: number,
+            Ground: string,
+            Venue: string,
+            Horse: {
+                [HorseNo: number] : {
+                    HorseName: string,
+                    predict: string
+                }
+            }
+        }
+    },
+    shell: PythonShell
+    ) {
+    let tree: IFPredictParentTreeNode[] = []
+    let key = 0
+    for (const strkey of Object.keys(predictdata)) {
+        const RaceID = Number(strkey)
+        const datas: IFPredictTreeNode[] =  []
+        const Horses = predictdata[RaceID].Horse
+        for (const strHorseNo of Object.keys(Horses)) {
+            const HorseNo = Number(strHorseNo)
+            const row = Horses[HorseNo].predict
+            const Name = Horses[HorseNo].HorseName
+            const predict = await Predict(row, shell) as number
+            datas.push({
+                key: `${key}-${HorseNo-1}`,
+                data: {
+                    'RaceID': '',
+                    'HorseNo': `${HorseNo}`,
+                    'Name': Name,
+                    'Predict': `${predict}`
+                }
+            })
+        }
+        tree.push({
+            key: key,
+            data: {
+                'RaceID': `${RaceID}`,
+                'HorseNo': `${Object.keys(Horses).length}`,
+                'Name': `${predictdata[RaceID].Venue}_${predictdata[RaceID].Round}`,
+                'Predict': ''
+            },
+            children: datas
+        })
+        key++
+    }
+    return {
+        'root':
+            tree
+    }
+}
 async function GetRaceWeek(Year: number, Month: number, HoldDay: number) {
     const strMonth = Month < 10 ? `0${Month}` : `${Month}`
     const strDay = HoldDay < 10 ? `0${HoldDay}` : `${HoldDay}`
@@ -98,6 +103,18 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number) {
     const pageElement = iconv.decode(page, 'eucjp')
 
     const predictRaceID: number[] = []
+    const idparam = new PrmGetSYSTEMCurrentID(null)
+    const idsql = new GetSYSTEMCurrentID(idparam)
+    const ids = await idsql.Execsql() as EntSYSTEMCurrentID[]
+
+    let RaceHorseID: number = asEnumrable(ids)
+        .Where(x => x.ID == 3)
+        .Select(x => x.CurrentID)
+        .FirstOrDefault()
+    let RaceID: number = asEnumrable(ids)
+        .Where(x => x.ID == 2)
+        .Select(x => x.CurrentID)
+        .FirstOrDefault()
     for (const strkey of Object.keys(ClassRace.VaneuMatch)) {
         const VenueNum = Number(strkey)
         if (pageElement.match(ClassRace.VaneuMatch[VenueNum])) {
@@ -109,7 +126,7 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number) {
             const sqlDay = new GetVenueMaxDay(Year, VenueNum, Hold)
             const lstDay = await sqlDay.Execsql()
 
-            const Day = lstDay[0].Day - 1
+            const Day = lstDay[0].Day
 
             let strDay = Day + 1 < 10 ? `0${Day + 1}` : `${Day + 1}`
 
@@ -130,32 +147,22 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number) {
             const raceparam: PrmRaceInfo[] = []
             const horseparam: PrmRegisterRaceHorseInfo[] = []
 
-            const idparam = new PrmGetSYSTEMCurrentID(null)
-            const idsql = new GetSYSTEMCurrentID(idparam)
-            const ids = await idsql.Execsql() as EntSYSTEMCurrentID[]
-
-            let RaceHorseID: number = asEnumrable(ids)
-                .Where(x => x.ID == 3)
-                .Select(x => x.CurrentID)
-                .FirstOrDefault()
-            let RaceID: number = asEnumrable(ids)
-                .Where(x => x.ID == 2)
-                .Select(x => x.CurrentID)
-                .FirstOrDefault()
             for (const Round of Rounds) {
                 RaceID++
                 const strRound = Round < 10 ? `0${Round}` : `${Round}`
                 const VenueCode = ClassRace.VenueCode[VenueNum]
                 const strRaceID = `${Year}${VenueCode}${strHold}${strDay}${strRound}`
                 const memberurl = `https://race.netkeiba.com/race/shutuba.html?race_id=${strRaceID}&rf=race_submenu`
+
                 const axios: AxiosBase = new AxiosBase(memberurl)
                 const page = await axios.GET() as Buffer
                 
                 const pageElement = iconv.decode(page, 'eucjp')
                 if (pageElement.match(/RaceName/)) {
-                    predictRaceID.push(RaceID)
                     const pages = pageElement.split('\n')
                     const racedata: ClassRace = PageAnalysis(pages, 0, strRaceID, VenueCode, Year, Hold, Day, Month, HoldDay, Round)
+                    if (racedata.Ground == 3) continue;
+                    predictRaceID.push(RaceID)
 
                     const param = new PrmRaceInfo(RaceID, strRaceID, VenueCode, Year, Hold, Day, Round, racedata.Range, racedata.Direction, racedata.Ground, racedata.Weather, racedata.GroundCondition, Month, HoldDay)
                     raceparam.push(param)
@@ -191,12 +198,34 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number) {
                     }
                 }
             }
-            const horsesql = new SQLRegisterRaceHorseInfo(horseparam)
-            // await horsesql.BulkInsert('Horse')
-            const racesql = new SQLRegisterRaceInfo(raceparam)
-            // await racesql.BulkInsert('Race')
+            if (raceparam.length > 0) {
+                const horsesql = new SQLRegisterRaceHorseInfo(horseparam)
+                await horsesql.BulkInsert('Horse')
+                const racesql = new SQLRegisterRaceInfo(raceparam)
+                await racesql.BulkInsert('Race')
+            }
         }
     }
+    const param = new PrmStudyData(predictRaceID)
+    const initsql = new InitRaceInfomation(param)
+    await initsql.Execsql()
+    const HorseIDsql = new GetHorseIDs(param)
+    const horseIDs = (await HorseIDsql.Execsql()).map(x => {return x.HorseID})
+
+    const studyparam = new PrmStudyData(horseIDs)
+    const studydatasql = new GetRaceHorseStudyData(studyparam)
+    const studydata = await studydatasql.Execsql() as EntRaceHorseStudyData[]
+    const mgr = new MgrRaceData(studydata, predictRaceID)
+    await mgr.dicCreate()
+    const deletesql = new DeletePredictRecord(param)
+    await deletesql.Execsql()
+    const insertDic = mgr.insertDic
+    const Achievement = new BulkInsert(insertDic.strAchievement, 'AchievementTable')
+    await Achievement.BulkInsert('AchievementTable_')
+    const Aptitude = new BulkInsert(insertDic.strPassage, 'AptitudeTable')
+    await Aptitude.BulkInsert('AptitudeTable_')
+    const Rotation = new BulkInsert(insertDic.data, 'RotationTable')
+    await Rotation.BulkInsert('RotationTable_')
     return predictRaceID
 }
 
@@ -232,12 +261,14 @@ function PageAnalysis(pages: string[], ID: number, RaceID: string, Venue: string
                 range = Number(line.match(/\d{4}/)?.[0])
             }
             // 芝orダート
-            if (line.match(/芝/)) {
-                ground = 1
-            } else if (line.match(/ダ/)) {
-                ground = 2
-            } else if (line.match(/障/)) {
-                ground = 3
+            if (ground == 0) {
+                if (line.match(/障/)) {
+                    ground = 3
+                } else if (line.match(/ダ/)) {
+                    ground = 2
+                } else if (line.match(/芝/)) {
+                    ground = 1
+                }
             }
     
             // 向き
@@ -317,7 +348,8 @@ function PageAnalysis(pages: string[], ID: number, RaceID: string, Venue: string
         }
 
         if (line.match(/"Txt_C">\d{2}/)) {
-            dicHorse[GateNo][HorseNo].Weight = Number(line.match(/\d{2}.\d{1}/)?.[0])
+            // dicHorse[GateNo][HorseNo].Weight = Number(line.match(/\d{2}.\d{1}/)?.[0])
+            dicHorse[GateNo][HorseNo].Weight = Number(line.match(/\d{2}/)?.[0])
         }
 
         if (line.match(/jockey\/result\/recent/)) {

@@ -12,21 +12,30 @@ import GetRotationData from "../sql/query/GetRotationData"
 import simpleProgress, { multiProgress } from "./ProgressBar"
 import { PythonShell } from "python-shell"
 import GetRaceHorseInfomationData from "../sql/query/GetRaceHorseInfomationData"
-import FileUtil from "../FileUtil"
 
 export default async function CreateRacePredictData(value: EntRaceInfomationData[], shell: PythonShell) {
     const ProgressBar = simpleProgress()
     const rows: {
         [RaceID: number]: {
-            [HorseNo: number] :string
+            Round: number,
+            Ground: string,
+            Venue: string,
+            Horse: {
+                [HorseNo: number] : {
+                    HorseName: string,
+                    predict: string
+                }
+            }
         }
     } = {}
     const dicRace: {
         [RaceID: number]: {
             Venue: number,
+            VenueName: string,
             Direction: number,
             Range: number,
             Ground: number,
+            GroundName: string,
             GroundCondition: number,
             Weather: number,
             Hold: number,
@@ -43,7 +52,8 @@ export default async function CreateRacePredictData(value: EntRaceInfomationData
                 [HorseNo: number]: 
                 {
                     horseinfo: string,
-                    rank: number
+                    rank: number,
+                    Name: string
                 }
             }
         }
@@ -54,9 +64,11 @@ export default async function CreateRacePredictData(value: EntRaceInfomationData
         initprogress(1)
         dicRace[x.ID] = {
             Venue: x.Venue,
+            VenueName: x.VenueName,
             Direction: x.Direction,
             Range: x.Range,
             Ground: x.Ground,
+            GroundName: x.GroundName,
             GroundCondition: x.GroundCondition,
             Weather: x.Weather,
             Hold: x.Hold,
@@ -74,6 +86,7 @@ export default async function CreateRacePredictData(value: EntRaceInfomationData
             [HorseID: number]: {
                 Jockey: number,
                 Rank: number,
+                HorseName: string,
                 HorseNo: number
                 HorseAge: number,
                 HorseGender: number,
@@ -94,6 +107,7 @@ export default async function CreateRacePredictData(value: EntRaceInfomationData
         dicHorse[data.RaceID][data.HorseID] = {
             Jockey: data.JockeyID,
             Rank : 0,
+            HorseName: data.Name,
             HorseNo : data.HorseNo,
             HorseAge: data.HorseAge,
             HorseGender: data.HorseGender,
@@ -179,10 +193,12 @@ export default async function CreateRacePredictData(value: EntRaceInfomationData
         for (let no = 1; no <= 24; no++ ){
             dicpredict[RaceID].Horses[no]={
                 horseinfo:',None,None,None,None,None',
-                rank:-1
+                rank:-1,
+                Name: ''
             }
         }
         const Horse = dicHorse[RaceID]
+        if (RaceID == 127793) console.log(Horse)
 
         const predictprogress = multiProgressber().addProgress(Object.keys(Horse).length, 20, 'predict')
         for (const strHorseID of Object.keys(Horse)) {
@@ -202,17 +218,23 @@ export default async function CreateRacePredictData(value: EntRaceInfomationData
             const rowAchievement = `achievement,0,${info.Venue},${info.Range},${info.Ground},${Horsevalue.HorseAge},${info.GroundCondition},${info.HoldMonth},${info.Hold},${info.Day},${info.Weather},${Horsevalue.Weight},${Horsevalue.TrainerID},${Horsevalue.HorseGender},${Horsevalue.HorseWeight},${Horsevalue.HorseNo},${Horsevalue.Fluctuation},${Horsevalue.Jockey},${Achievement.Achievement}`
 
             const Blood = await Predict(BloodData, shell)
-            const Jockey = await Predict(JockeyData, shell)
+            const Jockey = (await Predict(JockeyData, shell)) != null ? (await Predict(JockeyData, shell) as number) : null
             const preAchievement = await Predict(rowAchievement, shell)
             const preRotation = await Predict(rowRotation, shell)
             const preAptitude = await Predict(rowAptitude, shell)
 
             dicpredict[RaceID].Horses[Horsevalue.HorseNo] = {
                 horseinfo: `,${Blood},${Jockey},${preAchievement},${preRotation},${preAptitude}`,
-                rank: Horsevalue.Rank
+                rank: Horsevalue.Rank,
+                Name: Horsevalue.HorseName
             }
         }
-        rows[RaceID] = {}
+        rows[RaceID] = {
+            Round: dicRace[RaceID].Round,
+            Ground: dicRace[RaceID].GroundName,
+            Venue: dicRace[RaceID].VenueName,
+            Horse:[]
+        }
         for (const strHorseNo of Object.keys(dicpredict[RaceID].Horses)) {
             const HorseNo = Number(strHorseNo)
             const Horsevalue = dicpredict[RaceID].Horses[HorseNo]
@@ -227,7 +249,10 @@ export default async function CreateRacePredictData(value: EntRaceInfomationData
                         row += ',None,None,None,None,None'
                     }
                 }
-                rows[RaceID][HorseNo] = row
+                rows[RaceID].Horse[HorseNo] = {
+                    HorseName: Horsevalue.Name,
+                    predict: row
+                }
             }
         }
         predictprogress.del()

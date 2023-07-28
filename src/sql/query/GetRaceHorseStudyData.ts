@@ -68,7 +68,7 @@ from (
         , RHI.HorseAge as Age
         , RHI.Popularity
         , RHI.HorseGender
-        , isnull(HorseWeight, lead(HorseWeight)over(partition by RHI.HorseID order by convert(datetime, convert(nvarchar, RI.Year) + '-' + convert(nvarchar, RI.HoldMonth) + '-' + convert(nvarchar, RI.HoldDay)) desc)) as HorseWeight
+        , isnull(isnull(HorseWeight, lead(HorseWeight)over(partition by RHI.HorseID order by convert(datetime, convert(nvarchar, RI.Year) + '-' + convert(nvarchar, RI.HoldMonth) + '-' + convert(nvarchar, RI.HoldDay)) desc)), 0) as HorseWeight
         , RHI.HorseNo
         , case when RI.Year > 2000 then RHI.HorseAge else RHI.HorseAge - 1 end as HorseAge
         , RHI.Passage1

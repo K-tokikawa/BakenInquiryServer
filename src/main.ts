@@ -2,6 +2,7 @@ import express from 'express'
 import bodyparser from "body-parser"
 import GetJRAtohyoData from "./router/GetJRAtohyoData"
 import JRAtohyoLogin from "./router/JRAtohyoLogin"
+import GetRacePredict from "./router/GetRacePredict"
 
 export const app = express()
 app.use(bodyparser.urlencoded({ extended: false }));
@@ -14,7 +15,8 @@ app.use(function (req, res, next) {
 });
 app.use(GetJRAtohyoData)
 app.use(JRAtohyoLogin)
+app.use(GetRacePredict)
 
 export default app.listen(9999, () => {
-    console.log("App is running at http://localhost:9999")
+    console.log("App is running at http://localhost:9099")
 });

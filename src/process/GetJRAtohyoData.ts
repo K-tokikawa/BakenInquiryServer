@@ -17,7 +17,7 @@ export default async function process(jsessionid: string, m: string, mindate: st
 }
 
 function DateFormat(date: string){
-    return new Date(`${date.slice(0, 3)}-${date.slice(4, 5)}-${date.slice(6, 7)}`)
+    return new Date(`${date.slice(0, 3)}-${date.slice(4, 6)}-${date.slice(7, 8)}`)
 }
 
 async function GetJRAtohyoCSVData(jsessionid: string, m: string, mindate: Date, maxdate: Date) {

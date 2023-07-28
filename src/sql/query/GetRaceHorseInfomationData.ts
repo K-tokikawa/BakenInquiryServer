@@ -14,6 +14,7 @@ export default class GetRaceHorseInfomationData extends SQLBase<EntRaceHorseInfo
 select
       RaceID
     , HorseID
+    , HM.Name
     , Rank
     , HorseNo
     , JM.ID as JockeyID
@@ -25,6 +26,8 @@ select
     , Fluctuation
     , Popularity
 from RaceHorseInfomation as RHI
+    left outer join HorseMaster as HM
+        on HM.ID = RHI.HorseID
     left outer join JockeyMaster as JM
         on JM.JockeyID = RHI.JockeyID
 where
