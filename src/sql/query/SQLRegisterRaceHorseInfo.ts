@@ -73,6 +73,6 @@ export default class SQLRegisterRaceHorseInfo extends SQLBase<number>
             // line.replace(/null/, '')
             lines.push(line)
         })
-        this.ExecBulkInsert('RaceHorseInfomation', lines, `${__dirname}\\${filename}.csv`)
+        this.ExecBulkInsert('RaceHorseInfomation', lines, `\\\\192.168.102.163\\Itemp\\${filename}.csv`)
     }
 }

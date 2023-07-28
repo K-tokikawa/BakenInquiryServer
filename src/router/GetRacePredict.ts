@@ -7,11 +7,11 @@ router.post('/GetRacePredict', function (req, res, next) {
     const Year: number = req.body.Year
     const Month: number = req.body.Month
     const HoldDay: number = req.body.HoldDay
+    const Venue:number[] = req.body.Venue
+    const Round: number[] = req.body.Rounds
+    console.log(`${Year}_${Month}_${HoldDay}`)
     const shell = new PythonShell('./src/python/whilepredict.py')
-    console.log(Year)
-    console.log(Month)
-    console.log(HoldDay)
-    process(Year, Month, HoldDay, shell)
+    process(Year, Month, HoldDay, Venue, Round, shell)
         .then(result => {
             res.send(result)
         })

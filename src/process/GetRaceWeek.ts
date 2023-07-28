@@ -28,9 +28,10 @@ import InitRaceInfomation from '../sql/query/InitRaceInfomation'
 import GetRace from '../sql/query/GetRace'
 import DeleteRaceRecord from '../sql/query/DeleteUpdateRaceRecord'
 import UpdateSystemID from '../sql/query/UpdateSystemID'
+import FileUtil from '../FileUtil'
 
-export default async function process(Year: number, Month: number, HoldDay: number, shell: PythonShell) {
-    const predictRaceID = await GetRaceWeek(Year, Month, HoldDay)
+export default async function process(Year: number, Month: number, HoldDay: number, Venue: number[], Round: number[], shell: PythonShell) {
+    const predictRaceID = await GetRaceWeek(Year, Month, HoldDay, Venue, Round)
     const param = new PrmStudyData(predictRaceID)
     // // /**DBに登録した予測用のデータで予測を行う */
     const sql = new GetRaceInfomationData(param)
@@ -109,13 +110,15 @@ async function GetNodeTree(
             tree
     }
 }
-async function GetRaceWeek(Year: number, Month: number, HoldDay: number) {
+async function GetRaceWeek(Year: number, Month: number, HoldDay: number, Venue: number[], Rounds: number[]) {
 
     const strMonth = Month < 10 ? `0${Month}` : `${Month}`
     const strDay = HoldDay < 10 ? `0${HoldDay}` : `${HoldDay}`
-    const raceIDparam = new PrmStudyData([], Year, Month, HoldDay)
+
+    const raceIDparam = new PrmStudyData([], Year, Month, HoldDay, Venue)
     const raceIDsql = new GetRace(raceIDparam)
     const registerdRace = await raceIDsql.Execsql()
+
     const registerdRaceIDs = registerdRace.map(x => {return x.RaceID})
     if (registerdRaceIDs.length > 0){
         const deletesql = new PrmStudyData(registerdRaceIDs)
@@ -143,8 +146,7 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number) {
         .Where(x => x.ID == 2)
         .Select(x => x.CurrentID)
         .FirstOrDefault()
-    for (const strkey of Object.keys(ClassRace.VaneuMatch)) {
-        const VenueNum = Number(strkey)
+    for (const VenueNum of Venue) {
         if (pageElement.match(ClassRace.VaneuMatch[VenueNum])) {
             const sqlHold = new GetVenueMaxHold(Year, VenueNum)
             const lstHold = await sqlHold.Execsql()
@@ -170,7 +172,6 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number) {
                 strHold = Hold < 10 ? `0${Hold}` : `${Hold}`
                 strDay = '01'
             }
-            const Rounds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ,12]
             const raceparam: PrmRaceInfo[] = []
             const horseparam: PrmRegisterRaceHorseInfo[] = []
             

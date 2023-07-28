@@ -4,7 +4,7 @@ import ClassRace from '../class/ClassRace'
 import { PythonShell } from 'python-shell'
 
 
-export default async function process(Year: number, Month: number, HoldDay: number, shell: PythonShell) {
+export default async function process(Year: number, Month: number, HoldDay: number) {
     const HoldVenue = await GetHoldVenu(Year, Month, HoldDay)
 
     return HoldVenue
