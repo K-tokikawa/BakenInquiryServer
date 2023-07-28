@@ -25,10 +25,12 @@ import GetHorseIDs from '../sql/query/GetHorseIDs'
 import { PythonShell } from 'python-shell'
 import {IFPredictParentTreeNode, IFPredictTreeNode} from '../IF/IFPredictTreeNode'
 import InitRaceInfomation from '../sql/query/InitRaceInfomation'
+import GetRace from '../sql/query/GetRace'
+import DeleteRaceRecord from '../sql/query/DeleteUpdateRaceRecord'
+import UpdateSystemID from '../sql/query/UpdateSystemID'
 
 export default async function process(Year: number, Month: number, HoldDay: number, shell: PythonShell) {
     const predictRaceID = await GetRaceWeek(Year, Month, HoldDay)
-    console.log(predictRaceID)
     const param = new PrmStudyData(predictRaceID)
     // // /**DBに登録した予測用のデータで予測を行う */
     const sql = new GetRaceInfomationData(param)
@@ -59,21 +61,35 @@ async function GetNodeTree(
     for (const strkey of Object.keys(predictdata)) {
         const RaceID = Number(strkey)
         const datas: IFPredictTreeNode[] =  []
+        const result: {
+            HorseNo: number
+            predict :number
+        }[] = []
         const Horses = predictdata[RaceID].Horse
         for (const strHorseNo of Object.keys(Horses)) {
             const HorseNo = Number(strHorseNo)
             const row = Horses[HorseNo].predict
             const Name = Horses[HorseNo].HorseName
             const predict = await Predict(row, shell) as number
+            result.push({HorseNo, predict})
             datas.push({
                 key: `${key}-${HorseNo-1}`,
                 data: {
                     'RaceID': '',
                     'HorseNo': `${HorseNo}`,
                     'Name': Name,
-                    'Predict': `${predict}`
+                    'Predict': `${predict}`,
+                    'Rank': ''
                 }
             })
+        }
+        result.sort((x, y) => {
+            return x.predict - y.predict
+        })
+        let rank = 0
+        for (const val of result) {
+            rank++
+            datas[val.HorseNo - 1].data.Rank = `${rank}`
         }
         tree.push({
             key: key,
@@ -81,7 +97,8 @@ async function GetNodeTree(
                 'RaceID': `${RaceID}`,
                 'HorseNo': `${Object.keys(Horses).length}`,
                 'Name': `${predictdata[RaceID].Venue}_${predictdata[RaceID].Round}`,
-                'Predict': ''
+                'Predict': '',
+                'Rank': ''
             },
             children: datas
         })
@@ -93,8 +110,19 @@ async function GetNodeTree(
     }
 }
 async function GetRaceWeek(Year: number, Month: number, HoldDay: number) {
+
     const strMonth = Month < 10 ? `0${Month}` : `${Month}`
     const strDay = HoldDay < 10 ? `0${HoldDay}` : `${HoldDay}`
+    const raceIDparam = new PrmStudyData([], Year, Month, HoldDay)
+    const raceIDsql = new GetRace(raceIDparam)
+    const registerdRace = await raceIDsql.Execsql()
+    const registerdRaceIDs = registerdRace.map(x => {return x.RaceID})
+    if (registerdRaceIDs.length > 0){
+        const deletesql = new PrmStudyData(registerdRaceIDs)
+        const sql = new DeleteRaceRecord(deletesql)
+        sql.Execsql()
+    }
+
     const dateID = `${Year}${strMonth}${strDay}`
 
     const url = `https://race.netkeiba.com/top/race_list.html?kaisai_date=${dateID}`
@@ -142,11 +170,10 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number) {
                 strHold = Hold < 10 ? `0${Hold}` : `${Hold}`
                 strDay = '01'
             }
-
             const Rounds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ,12]
             const raceparam: PrmRaceInfo[] = []
             const horseparam: PrmRegisterRaceHorseInfo[] = []
-
+            
             for (const Round of Rounds) {
                 RaceID++
                 const strRound = Round < 10 ? `0${Round}` : `${Round}`
@@ -203,6 +230,13 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number) {
                 await horsesql.BulkInsert('Horse')
                 const racesql = new SQLRegisterRaceInfo(raceparam)
                 await racesql.BulkInsert('Race')
+                const horseupdate = new PrmStudyData([], RaceHorseID, 3)
+                const horseupdatesql = new UpdateSystemID(horseupdate)
+                horseupdatesql.Execsql()
+                const raceupdate = new PrmStudyData([], RaceID, 2)
+                const raceupdatesql = new UpdateSystemID(raceupdate)
+                raceupdatesql.Execsql()
+
             }
         }
     }

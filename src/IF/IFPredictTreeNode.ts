@@ -3,8 +3,9 @@ export interface IFPredictTreeNode{
     data: {
         'RaceID': string
         'HorseNo': string,
-        'Name': string
-        'Predict': string
+        'Name': string,
+        'Predict': string,
+        'Rank': string
     }
 }
 
@@ -15,6 +16,7 @@ export interface IFPredictParentTreeNode{
         'HorseNo': string
         'Name': string
         'Predict': string
+        'Rank': string
     },
     children: IFPredictTreeNode[]
 }

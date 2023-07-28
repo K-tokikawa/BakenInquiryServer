@@ -198,7 +198,6 @@ export default async function CreateRacePredictData(value: EntRaceInfomationData
             }
         }
         const Horse = dicHorse[RaceID]
-        if (RaceID == 127793) console.log(Horse)
 
         const predictprogress = multiProgressber().addProgress(Object.keys(Horse).length, 20, 'predict')
         for (const strHorseID of Object.keys(Horse)) {
