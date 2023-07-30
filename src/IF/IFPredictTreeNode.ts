@@ -2,9 +2,10 @@ export interface IFPredictTreeNode{
     key: string,
     data: {
         'RaceID': string
-        'HorseNo': string,
-        'Name': string,
-        'Predict': string,
+        'Mark': string
+        'HorseNo': string
+        'Name': string
+        'Predict': string
         'Rank': string
     }
 }
@@ -12,11 +13,13 @@ export interface IFPredictTreeNode{
 export interface IFPredictParentTreeNode{
     key: number,
     data:{
-        'RaceID': string,
+        'RaceID': string
+        'Mark': string
         'HorseNo': string
         'Name': string
         'Predict': string
         'Rank': string
+        'text': string
     },
     children: IFPredictTreeNode[]
 }

@@ -11,7 +11,8 @@ export default class ClassHorse{
     private m_Fluctuation: string
     private m_Barn: number
     private m_TrainerID: string
-    constructor(netkeibaID: string, GateNo: number, HorseNo: number, HorseAge: number, HorseGender: number, Weight: number, JockeyID: string, Popularity: number, HorseWeight: number, Fluctuation: string, Barn: number, TrainerID: string) {
+    private m_cancel: boolean
+    constructor(netkeibaID: string, GateNo: number, HorseNo: number, HorseAge: number, HorseGender: number, Weight: number, JockeyID: string, Popularity: number, HorseWeight: number, Fluctuation: string, Barn: number, TrainerID: string, cancel: boolean) {
         this.m_netkeibaID = netkeibaID
         this.m_GateNo = GateNo
         this.m_HorseNo = HorseNo
@@ -24,6 +25,7 @@ export default class ClassHorse{
         this.m_Fluctuation = Fluctuation
         this.m_Barn = Barn
         this.m_TrainerID = TrainerID
+        this.m_cancel = cancel
     }
     public get netkeibaID() { return this.m_netkeibaID}
     public get GateNo() { return this.m_GateNo}
@@ -37,4 +39,5 @@ export default class ClassHorse{
     public get Fluctuation() { return this.m_Fluctuation}
     public get Barn() { return this.m_Barn}
     public get TrainerID() { return this.m_TrainerID}
+    public get Cancel() { return this.m_cancel}
 }

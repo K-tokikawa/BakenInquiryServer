@@ -1,6 +1,6 @@
 {
     "DATABASE": {
-        "server": "localhost",
+        "server": "192.168.102.163",
         "authentication": {
             "type": "default",
             "options": {

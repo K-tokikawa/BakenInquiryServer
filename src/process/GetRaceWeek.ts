@@ -29,15 +29,18 @@ import GetRace from '../sql/query/GetRace'
 import DeleteRaceRecord from '../sql/query/DeleteUpdateRaceRecord'
 import UpdateSystemID from '../sql/query/UpdateSystemID'
 import FileUtil from '../FileUtil'
+import { NumberLiteralType } from 'typescript'
 
 export default async function process(Year: number, Month: number, HoldDay: number, Venue: number[], Round: number[], shell: PythonShell) {
-    const predictRaceID = await GetRaceWeek(Year, Month, HoldDay, Venue, Round)
-    const param = new PrmStudyData(predictRaceID)
+    const predictRacedata = await GetRaceWeek(Year, Month, HoldDay, Venue, Round)
+    const param = new PrmStudyData(predictRacedata.predictRaceID)
     // // /**DBに登録した予測用のデータで予測を行う */
     const sql = new GetRaceInfomationData(param)
     const value = await sql.Execsql() as EntRaceInfomationData[]
     const predictdata = await CreateRacePredictData(value, shell)
-    return await GetNodeTree(predictdata, shell)
+    const res = await GetNodeTree(predictdata, predictRacedata.cancelHorseNo, shell)
+    // FileUtil.OutputFile(JSON.stringify(res).split('\n'), 'text.txt')
+    return res
 
 }
 
@@ -55,6 +58,7 @@ async function GetNodeTree(
             }
         }
     },
+    cancelHorseNo: {[RaceID: number]: number[]},
     shell: PythonShell
     ) {
     let tree: IFPredictParentTreeNode[] = []
@@ -67,19 +71,31 @@ async function GetNodeTree(
             predict :number
         }[] = []
         const Horses = predictdata[RaceID].Horse
+        const RaceName = `${predictdata[RaceID].Venue}_${predictdata[RaceID].Round}R`
+        let txt = `${RaceName}\n`
         for (const strHorseNo of Object.keys(Horses)) {
             const HorseNo = Number(strHorseNo)
             const row = Horses[HorseNo].predict
             const Name = Horses[HorseNo].HorseName
-            const predict = await Predict(row, shell) as number
-            result.push({HorseNo, predict})
+            let predict = await Predict(row, shell) as number
+            let strpredict = `${predict}`
+            if (cancelHorseNo[RaceID] != undefined) {
+                if (cancelHorseNo[RaceID].includes(HorseNo)) {
+                    strpredict = ''
+                } else {
+                    result.push({HorseNo, predict})
+                }
+            } else {
+                result.push({HorseNo, predict})
+            }
             datas.push({
                 key: `${key}-${HorseNo-1}`,
                 data: {
                     'RaceID': '',
+                    'Mark': '',
                     'HorseNo': `${HorseNo}`,
                     'Name': Name,
-                    'Predict': `${predict}`,
+                    'Predict': strpredict,
                     'Rank': ''
                 }
             })
@@ -89,17 +105,49 @@ async function GetNodeTree(
         })
         let rank = 0
         for (const val of result) {
+            let Mark = ''
             rank++
+            if (rank == 1) {
+                Mark = '◎'
+                txt += `${Mark} ${val.HorseNo} ${datas[val.HorseNo - 1].data.Name}\n`
+                }
+            if (rank == 2) {
+                Mark = '〇'
+                txt += `${Mark} ${val.HorseNo} ${datas[val.HorseNo - 1].data.Name}\n`
+                }
+            if (rank == 3) {
+                Mark = '▲'
+                txt += `${Mark} ${val.HorseNo} ${datas[val.HorseNo - 1].data.Name}\n`
+                }
+            if (rank == 4) {
+                Mark = '△'
+                txt += `${Mark} ${val.HorseNo} ${datas[val.HorseNo - 1].data.Name}\n`
+                }
+            if (rank > 4) {
+                if (val.predict - result[3].predict < 0.25) {
+                    Mark = '△'
+                    txt += `${Mark} ${val.HorseNo} ${datas[val.HorseNo - 1].data.Name}\n`
+                }
+            }
             datas[val.HorseNo - 1].data.Rank = `${rank}`
+            datas[val.HorseNo - 1].data.Mark = Mark
         }
+        txt += `\n`
+        txt += `#${predictdata[RaceID].Venue}${predictdata[RaceID].Round}R\n`
+        txt += `#中央競馬\n`
+        txt += `#競馬予想\n`
+        txt += `#競馬AI\n`
+        txt += `#AI予測`
         tree.push({
             key: key,
             data: {
-                'RaceID': `${RaceID}`,
+                'RaceID': `${RaceName}`,
+                'Mark': '',
                 'HorseNo': `${Object.keys(Horses).length}`,
-                'Name': `${predictdata[RaceID].Venue}_${predictdata[RaceID].Round}`,
+                'Name': `${RaceID}`,
                 'Predict': '',
-                'Rank': ''
+                'Rank': '',
+                'text': txt
             },
             children: datas
         })
@@ -134,6 +182,15 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number, Venue: 
     const pageElement = iconv.decode(page, 'eucjp')
 
     const predictRaceID: number[] = []
+    const cancelHorseNo: {
+        [RaceID: number]: number[]
+    } = {}
+    const RaceData: {
+        predictRaceID: number[]
+        cancelHorseNo: {
+            [RaceID: number]: number[]
+        }
+    } = {predictRaceID: [], cancelHorseNo: {}}
     const idparam = new PrmGetSYSTEMCurrentID(null)
     const idsql = new GetSYSTEMCurrentID(idparam)
     const ids = await idsql.Execsql() as EntSYSTEMCurrentID[]
@@ -156,13 +213,14 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number, Venue: 
             const sqlDay = new GetVenueMaxDay(Year, VenueNum, Hold)
             const lstDay = await sqlDay.Execsql()
 
-            const Day = lstDay[0].Day
+            let Day = lstDay[0].Day + 1
 
-            let strDay = Day + 1 < 10 ? `0${Day + 1}` : `${Day + 1}`
+            let strDay = Day< 10 ? `0${Day}` : `${Day}`
 
             // 開催が合っているかの確認
             // 11Rなのはページが用意されている確率が高いから
             const checkRaceID = `${Year}${ClassRace.VenueCode[VenueNum]}${strHold}${strDay}11`
+            console.log(checkRaceID)
             const memberurl = `https://race.netkeiba.com/race/shutuba.html?race_id=${checkRaceID}&rf=race_submenu`
             const axios: AxiosBase = new AxiosBase(memberurl)
             const page = await axios.GET() as Buffer
@@ -171,6 +229,7 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number, Venue: 
                 Hold += 1
                 strHold = Hold < 10 ? `0${Hold}` : `${Hold}`
                 strDay = '01'
+                Day = 1
             }
             const raceparam: PrmRaceInfo[] = []
             const horseparam: PrmRegisterRaceHorseInfo[] = []
@@ -188,7 +247,9 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number, Venue: 
                 const pageElement = iconv.decode(page, 'eucjp')
                 if (pageElement.match(/RaceName/)) {
                     const pages = pageElement.split('\n')
+                    FileUtil.OutputFile(pages, `${RaceID}.txt`)
                     const racedata: ClassRace = PageAnalysis(pages, 0, strRaceID, VenueCode, Year, Hold, Day, Month, HoldDay, Round)
+
                     if (racedata.Ground == 3) continue;
                     predictRaceID.push(RaceID)
 
@@ -196,6 +257,13 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number, Venue: 
                     raceparam.push(param)
 
                     for (const horse of racedata.Horse) {
+                        if (horse.Cancel) {
+                            if (cancelHorseNo[RaceID] == undefined) {
+                                cancelHorseNo[RaceID] = [horse.HorseNo]
+                            } else {
+                                cancelHorseNo[RaceID].push(horse.HorseNo)
+                            }
+                        }
                         const Horseparam = new PrmRegisterRaceHorseInfo(
                             RaceHorseID++,
                             RaceID,
@@ -261,7 +329,9 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number, Venue: 
     await Aptitude.BulkInsert('AptitudeTable_')
     const Rotation = new BulkInsert(insertDic.data, 'RotationTable')
     await Rotation.BulkInsert('RotationTable_')
-    return predictRaceID
+    RaceData.predictRaceID = predictRaceID
+    RaceData.cancelHorseNo = cancelHorseNo
+    return RaceData
 }
 
 function PageAnalysis(pages: string[], ID: number, RaceID: string, Venue: string, Year: number, Hold: number, Day: number, HoldMonth: number, HoldDay: number, Round: number) {
@@ -283,12 +353,14 @@ function PageAnalysis(pages: string[], ID: number, RaceID: string, Venue: string
                 Fluctuation: string,
                 Barn: number,
                 TrainerID: string
+                cancel: boolean
             }
         }
     } = {}
     let HorseID: string | null = ''
     let GateNo: number = 0
     let HorseNo: number = 0
+    let cancel: boolean = false
     for (const line of pages) {
         if (line.match(/span class="Turf"/)) {
             // 距離
@@ -346,6 +418,9 @@ function PageAnalysis(pages: string[], ID: number, RaceID: string, Venue: string
                 dicHorse[GateNo] = {}
             }
         }
+        if (line.match(/HorseList Cancel/)) {
+            cancel = true
+        }
         if (line.match(/Umaban[0-9] /)) {
             HorseNo = Number(line.match(/(?<=Txt_C"\>).*?(?=\<\/td\>)/)?.[0] as string)
             if (dicHorse[GateNo][HorseNo] == undefined) {
@@ -360,8 +435,10 @@ function PageAnalysis(pages: string[], ID: number, RaceID: string, Venue: string
                     Fluctuation: '',
                     Barn: 0,
                     TrainerID: '',
+                    cancel: cancel
                 }
             }
+            cancel = false
         }
 
         if (line.match(/(?<=id="myhorse_).*?(?=\")/)) {
@@ -447,6 +524,7 @@ function PageAnalysis(pages: string[], ID: number, RaceID: string, Venue: string
             const Fluctuation = dicHorse[GateNo][HorseNo].Fluctuation
             const Barn = dicHorse[GateNo][HorseNo].Barn
             const TrainerID = dicHorse[GateNo][HorseNo].TrainerID
+            const cancel = dicHorse[GateNo][HorseNo].cancel
             const Horse = new ClassHorse(
                 HorseID,
                 GateNo,
@@ -459,7 +537,8 @@ function PageAnalysis(pages: string[], ID: number, RaceID: string, Venue: string
                 HorseWeight,
                 Fluctuation,
                 Barn,
-                TrainerID
+                TrainerID,
+                cancel
             )
             data.Horse.push(Horse)
         }
