@@ -29,7 +29,6 @@ import GetRace from '../sql/query/GetRace'
 import DeleteRaceRecord from '../sql/query/DeleteUpdateRaceRecord'
 import UpdateSystemID from '../sql/query/UpdateSystemID'
 import FileUtil from '../FileUtil'
-import { NumberLiteralType } from 'typescript'
 
 export default async function process(Year: number, Month: number, HoldDay: number, Venue: number[], Round: number[], shell: PythonShell) {
     const predictRacedata = await GetRaceWeek(Year, Month, HoldDay, Venue, Round)
