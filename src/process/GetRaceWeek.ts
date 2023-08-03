@@ -323,6 +323,8 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number, Venue: 
     const deletesql = new DeletePredictRecord(param)
     await deletesql.Execsql()
     const insertDic = mgr.insertDic
+    const pace = new BulkInsert(insertDic.pace, 'PaceTable')
+    await pace.BulkInsert('PaceTable_')
     const Achievement = new BulkInsert(insertDic.strAchievement, 'AchievementTable')
     await Achievement.BulkInsert('AchievementTable_')
     const Aptitude = new BulkInsert(insertDic.strPassage, 'AptitudeTable')

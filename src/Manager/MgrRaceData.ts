@@ -16,14 +16,15 @@ export default class MgrRaceData{
     private m_insertDic: {
         strAchievement: string[],
         data: string[],
-        strPassage: string[]
+        strPassage: string[],
+        pace: string[]
     }
 
     constructor(RaceData: EntRaceHorseStudyData[], PredictRaceID: number[]) {
         this.m_RaceData = RaceData
         this.m_PredictRaceID = PredictRaceID
         this.m_dic = {}
-        this.m_insertDic = {strAchievement: [], data: [], strPassage: []}
+        this.m_insertDic = {strAchievement: [], data: [], strPassage: [], pace: []}
     }
 
     public get dic(){return this.m_dic}
@@ -114,30 +115,42 @@ export default class MgrRaceData{
 
                 // Rotation
                 let data = ''
+                let pace = ''
                 if (RaceHorseData.length > 0) {
                     for (const value of RaceHorseData){
                         if (data == ''){
                             data += `${HorseID},${RaceID}`
+                            pace = `${value.RaceID},${value.HorseNo}`
                         } else {
                             data += `,${value.GoalTime}`.replace('null', '')
-                            data += `,${value.Venue},${value.HoldMonth},${value.Hold},${value.Day},${value.Range},${value.Ground},${value.GroundCondition},${value.Weather},${value.Weight},${value.TrainerID},${value.HorseGender},${value.HorseWeight},${value.HorseNo},${value.HorseAge},${value.Fluctuation},${value.JockeyID},${value.before}`
+                            data += `,${value.GoalTime},${value.Venue},${value.HoldMonth},${value.Hold},${value.Day},${value.Range},${value.Ground},${value.GroundCondition},${value.Weather},${value.Pace},${value.Weight},${value.TrainerID},${value.HorseGender},${value.HorseWeight},${value.HorseNo},${value.HorseAge},${value.Remarks},${value.RaceRemarks},${value.Fluctuation},${value.SpurtTime},${value.JockeyID},${value.before}`
+                            pace += `,${value.Pace},${value.Passage1},${value.Passage2},${value.Passage3},${value.Passage4}`
                         }
                     }
-                    const empty = ',,,,,,,,,,,,,,,,,,'
+                    const empty = ',,,,,,,,,,,,,,,,,,,,,,'
+                    const paceempty = ',,,,,'
                     if (RaceHorseData.length == 1){
                         data = data + empty + empty + empty + empty + empty
+                        pace = pace + paceempty + paceempty + paceempty + paceempty + paceempty + paceempty
                     }
                     if (RaceHorseData.length == 2){
                         data = data + empty + empty + empty + empty
+                        pace = pace + paceempty + paceempty + paceempty + paceempty + paceempty
                     }
                     if (RaceHorseData.length == 3){
                         data = data + empty + empty + empty
+                        pace = pace + paceempty + paceempty + paceempty + paceempty
                     }
                     if (RaceHorseData.length == 4){
                         data = data + empty + empty
+                        pace = pace + paceempty + paceempty + paceempty
                     }
                     if (RaceHorseData.length == 5){
                         data = data + empty
+                        pace = pace + paceempty + paceempty
+                    }
+                    if (RaceHorseData.length == 6) {
+                        pace = pace + paceempty
                     }
                     // data = 'rotation,0,' + data
                 }
@@ -187,6 +200,7 @@ export default class MgrRaceData{
                         strAchievement += `,${achievement.GoalTime},${achievement.Weight},${achievement.before}`
                     }
                 }
+                this.m_insertDic.pace.push(pace)
                 this.m_insertDic.strAchievement.push(strAchievement)
                 this.m_insertDic.data.push(data)
                 this.m_insertDic.strPassage.push(strPassage)

@@ -15,6 +15,7 @@ export default class EntRaceHorseStudyData{
     public Ground: number
     public GroundCondition: number
     public Round: number
+    public pace: number
     public Weight: number
     public TrainerID: number
     public Age: number
@@ -29,6 +30,8 @@ export default class EntRaceHorseStudyData{
     public Passage4: number | null
     public SpurtTime: number | null
     public Fluctuation: number
+    public RaceRemarks: number
+    public Remarks: number
     public JockeyID: number
     public before: Date
     public num: number
@@ -49,6 +52,7 @@ export default class EntRaceHorseStudyData{
         this.Ground = 0
         this.GroundCondition = 0
         this.Round = 0
+        this.pace = 0
         this.Weight = 0
         this.TrainerID = 0
         this.Age = 0
@@ -63,6 +67,8 @@ export default class EntRaceHorseStudyData{
         this.Passage4 = null
         this.SpurtTime = null
         this.Fluctuation = 0
+        this.RaceRemarks = 0
+        this.Remarks = 0
         this.JockeyID = 0
         this.before = new Date()
         this.num = 0

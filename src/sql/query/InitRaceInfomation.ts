@@ -52,11 +52,6 @@ from (
 where
     TA.ID = RaceHorseInfomation.ID
 
-select
-    *
-from RaceHorseInfomation
-where
-    Average is null
 `
         await this.ExecGet(sql)
     }
