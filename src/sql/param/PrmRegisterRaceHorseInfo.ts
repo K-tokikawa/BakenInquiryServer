@@ -26,6 +26,7 @@ export default class PrmRegisterRaceHorseInfo
     private m_Fluctuation    : string
     private m_Barn           : number
     private m_TrainerID      : string
+    private m_RaceRemarks    : number | null
 
     constructor(
         ID: number,
@@ -51,7 +52,8 @@ export default class PrmRegisterRaceHorseInfo
         HorseWeight    : number | null,
         Fluctuation    : string,
         Barn           : number,
-        TrainerID      : string
+        TrainerID      : string,
+        RaceRemarks    : number | null
     )
     {
         this.m_ID             = ID
@@ -78,9 +80,10 @@ export default class PrmRegisterRaceHorseInfo
         this.m_Fluctuation    = Fluctuation
         this.m_Barn           = Barn
         this.m_TrainerID      = TrainerID
+        this.m_RaceRemarks    = RaceRemarks
     }
     public get ID             () { return this.m_ID             }
-    public get RaceID         () { return this.m_RaceID }
+    public get RaceID         () { return this.m_RaceID         }
     public get netkeibaRaceID () { return this.m_netkeibaRaceID }
     public get Rank           () { return this.m_Rank           }
     public get Remarks        () { return this.m_Remarks        }
@@ -103,4 +106,5 @@ export default class PrmRegisterRaceHorseInfo
     public get Fluctuation    () { return this.m_Fluctuation    }
     public get Barn           () { return this.m_Barn           }
     public get TrainerID      () { return this.m_TrainerID      }
+    public get RaceRemarks    () { return this.m_RaceRemarks    }
 }

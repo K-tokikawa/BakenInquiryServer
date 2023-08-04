@@ -68,11 +68,12 @@ export default class SQLRegisterRaceHorseInfo extends SQLBase<number>
             const Fluctuation    = row.Fluctuation
             const Barn           = row.Barn
             const TrainerID      = row.TrainerID
+            const RaceRemark     = row.RaceRemarks != null ? row.RaceRemarks : ''
             const line = 
-                `${ID},${RaceID},${netkeibaRaceID},${Rank},${Remarks},${HorseID},${netkeibaID},${GateNo},${HorseNo},${HorseAge},${HorseGender},${Weight},${JockeyID},${GoalTime},${Passage1},${Passage2},${Passage3},${Passage4},${SpurtTime},${Popularity},${HorseWeight},${Fluctuation},${Barn},${TrainerID},,`
+                `${ID},${RaceID},${netkeibaRaceID},${Rank},${HorseID},${netkeibaID},${GateNo},${HorseNo},${HorseAge},${HorseGender},${Weight},${JockeyID},${GoalTime},${Passage1},${Passage2},${Passage3},${Passage4},${SpurtTime},${Popularity},${HorseWeight},${Fluctuation},${Remarks},${RaceRemark},${Barn},${TrainerID},,`
             // line.replace(/null/, '')
             lines.push(line)
         })
-        this.ExecBulkInsert('RaceHorseInfomation', lines, `\\\\192.168.102.163\\Itemp\\${filename}.csv`)
+        await this.ExecBulkInsert('RaceHorseInfomation', lines, `${__dirname}\\${filename}.csv`)
     }
 }

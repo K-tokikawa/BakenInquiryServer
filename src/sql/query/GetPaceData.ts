@@ -12,8 +12,7 @@ export default class GetPaceData extends SQLBase<EntPaceData[]>
     public async Execsql(): Promise<EntPaceData[]> {
         const sql = `
 select
-	  RT.pace
-    , RI.RaceID
+	  RI.ID
     , RHI.HorseNo
 	, RI.Venue
 	, RI.HoldMonth
@@ -26,7 +25,7 @@ select
 	, RHI.HorseAge
 	, RHI.HorseGender
 	, RHI.HorseWeight
-	, RHI.Fluctuation
+	, isnull(RHI.Fluctuation, 0) as Fluctuation
 	, RHI.Weight
 	, RHI.JockeyID
 	, Pace_1
@@ -59,10 +58,9 @@ from RaceInfomation as RI
         on RHI.RaceID = RI.ID
     inner join PaceTable as PT
 		on PT.RaceID = RI.ID
-	left outer join RapTable as RT
-		on RT.ID = RI.ID
+		and PT.HorseNo = RHI.HorseNo
 where
-    RI.ID in ${this.parameter?.IDs}`
+    RI.ID in (${this.parameter?.IDs})`
         return await this.ExecGet(sql)
     }
 }

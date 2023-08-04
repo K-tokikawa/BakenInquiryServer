@@ -38,7 +38,7 @@ export default async function process(Year: number, Month: number, HoldDay: numb
     const value = await sql.Execsql() as EntRaceInfomationData[]
     const predictdata = await CreateRacePredictData(value, shell)
     const res = await GetNodeTree(predictdata, predictRacedata.cancelHorseNo, shell)
-    // FileUtil.OutputFile(JSON.stringify(res).split('\n'), 'text.txt')
+    FileUtil.OutputFile(JSON.stringify(res).split('\n'), 'text.txt')
     return res
 
 }
@@ -288,6 +288,7 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number, Venue: 
                             horse.Fluctuation,
                             horse.Barn,
                             horse.TrainerID,
+                            null
                         )
                         horseparam.push(Horseparam)
                     }
@@ -295,8 +296,10 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number, Venue: 
             }
             if (raceparam.length > 0) {
                 const horsesql = new SQLRegisterRaceHorseInfo(horseparam)
+                console.log('Horse')
                 await horsesql.BulkInsert('Horse')
                 const racesql = new SQLRegisterRaceInfo(raceparam)
+                console.log('Race')
                 await racesql.BulkInsert('Race')
                 const horseupdate = new PrmStudyData([], RaceHorseID, 3)
                 const horseupdatesql = new UpdateSystemID(horseupdate)

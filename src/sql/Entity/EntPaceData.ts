@@ -1,6 +1,5 @@
 export default class EntPaceData{
-    public pace: number
-    public RaceID: number
+    public ID: number
     public HorseNo: number
     public Venue: number
     public HoldMonth: number
@@ -42,8 +41,7 @@ export default class EntPaceData{
     public Passage3_5: number
     public Passage4_5: number
     constructor(){
-        this.pace = 0
-        this.RaceID = 0
+        this.ID = 0
         this.HorseNo = 0
         this.Venue = 0
         this.HoldMonth = 0

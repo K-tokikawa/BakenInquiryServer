@@ -80,8 +80,8 @@ from (
         , RHI.Passage3
         , RHI.Passage4
         , RHI.SpurtTime
-        , RHI.RaceRemarks
-        , RHI.Remarks
+        , isnull(RHI.RaceRemarks, 0) as RaceRemarks
+        , isnull(RHI.Remarks, 0) as Remarks
         , convert(int, RHI.Fluctuation) as Fluctuation
         , JM.ID as JockeyID
         , RHI.HorseID

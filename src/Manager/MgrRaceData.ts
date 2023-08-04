@@ -123,7 +123,7 @@ export default class MgrRaceData{
                             pace = `${value.RaceID},${value.HorseNo}`
                         } else {
                             data += `,${value.GoalTime}`.replace('null', '')
-                            data += `,${value.GoalTime},${value.Venue},${value.HoldMonth},${value.Hold},${value.Day},${value.Range},${value.Ground},${value.GroundCondition},${value.Weather},${value.Pace},${value.Weight},${value.TrainerID},${value.HorseGender},${value.HorseWeight},${value.HorseNo},${value.HorseAge},${value.Remarks},${value.RaceRemarks},${value.Fluctuation},${value.SpurtTime},${value.JockeyID},${value.before}`
+                            data += `,${value.Venue},${value.HoldMonth},${value.Hold},${value.Day},${value.Range},${value.Ground},${value.GroundCondition},${value.Weather},${value.Pace},${value.Weight},${value.TrainerID},${value.HorseGender},${value.HorseWeight},${value.HorseNo},${value.HorseAge},${value.Remarks},${value.RaceRemarks},${value.Fluctuation},${`${value.SpurtTime}`.replace('null', '')},${value.JockeyID},${value.before}`
                             pace += `,${value.Pace},${value.Passage1},${value.Passage2},${value.Passage3},${value.Passage4}`
                         }
                     }

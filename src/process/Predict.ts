@@ -184,13 +184,12 @@ export default async function CreateRacePredictData(value: EntRaceInfomationData
         if (dicRotation[data.RaceID] == undefined) {
             dicRotation[data.RaceID] = {}
         }
-        dicRotation[data.RaceID][data.HorseID] = { Rotation : `${data.GoalTime_2},${data.Venue_2},${data.HoldMonth_2},${data.Hold_2},${data.Day_2},${data.Range_2},${data.Ground_2},${data.GroundCondition_2},${data.Weather_2},${data.Weight_2},${data.TrainerID_2},${data.HorseGender_2},${data.HorseWeight_2},${data.HorseNo_2},${data.HorseAge_2},${data.Fluctuation_2},${data.JockeyID_2},${data.before_2},${data.GoalTime_3},${data.Venue_3},${data.HoldMonth_3},${data.Hold_3},${data.Day_3},${data.Range_3},${data.Ground_3},${data.GroundCondition_3},${data.Weather_3},${data.Weight_3},${data.TrainerID_3},${data.HorseGender_3},${data.HorseWeight_3},${data.HorseNo_3},${data.HorseAge_3},${data.Fluctuation_3},${data.JockeyID_3},${data.before_3},${data.GoalTime_4},${data.Venue_4},${data.HoldMonth_4},${data.Hold_4},${data.Day_4},${data.Range_4},${data.Ground_4},${data.GroundCondition_4},${data.Weather_4},${data.Weight_4},${data.TrainerID_4},${data.HorseGender_4},${data.HorseWeight_4},${data.HorseNo_4},${data.HorseAge_4},${data.Fluctuation_4},${data.JockeyID_4},${data.before_4},${data.GoalTime_5},${data.Venue_5},${data.HoldMonth_5},${data.Hold_5},${data.Day_5},${data.Range_5},${data.Ground_5},${data.GroundCondition_5},${data.Weather_5},${data.Weight_5},${data.TrainerID_5},${data.HorseGender_5},${data.HorseWeight_5},${data.HorseNo_5},${data.HorseAge_5},${data.Fluctuation_5},${data.JockeyID_5},${data.before_5},${data.GoalTime_6},${data.Venue_6},${data.HoldMonth_6},${data.Hold_6},${data.Day_6},${data.Range_6},${data.Ground_6},${data.GroundCondition_6},${data.Weather_6},${data.Weight_6},${data.TrainerID_6},${data.HorseGender_6},${data.HorseWeight_6},${data.HorseNo_6},${data.HorseAge_6},${data.Fluctuation_6},${data.JockeyID_6},${data.before_6}`}
+        dicRotation[data.RaceID][data.HorseID] = { Rotation : `${data.GoalTime_2},${data.Venue_2},${data.HoldMonth_2},${data.Hold_2},${data.Day_2},${data.Range_2},${data.Ground_2},${data.GroundCondition_2},${data.Weather_2},${data.pace_2},${data.Weight_2},${data.TrainerID_2},${data.HorseGender_2},${data.HorseWeight_2},${data.HorseNo_2},${data.HorseAge_2},${data.Remarks_2},${data.RaceRemarks_2},${data.Fluctuation_2},${data.SpurtTime_2},${data.JockeyID_2},${data.before_2},${data.GoalTime_3},${data.Venue_3},${data.HoldMonth_3},${data.Hold_3},${data.Day_3},${data.Range_3},${data.Ground_3},${data.GroundCondition_3},${data.Weather_3},${data.pace_3},${data.Weight_3},${data.TrainerID_3},${data.HorseGender_3},${data.HorseWeight_3},${data.HorseNo_3},${data.HorseAge_3},${data.Remarks_3},${data.RaceRemarks_3},${data.Fluctuation_3},${data.SpurtTime_3},${data.JockeyID_3},${data.before_3},${data.GoalTime_4},${data.Venue_4},${data.HoldMonth_4},${data.Hold_4},${data.Day_4},${data.Range_4},${data.Ground_4},${data.GroundCondition_4},${data.Weather_4},${data.pace_4},${data.Weight_4},${data.TrainerID_4},${data.HorseGender_4},${data.HorseWeight_4},${data.HorseNo_4},${data.HorseAge_4},${data.Remarks_4},${data.RaceRemarks_4},${data.Fluctuation_4},${data.SpurtTime_4},${data.JockeyID_4},${data.before_4},${data.GoalTime_5},${data.Venue_5},${data.HoldMonth_5},${data.Hold_5},${data.Day_5},${data.Range_5},${data.Ground_5},${data.GroundCondition_5},${data.Weather_5},${data.pace_5},${data.Weight_5},${data.TrainerID_5},${data.HorseGender_5},${data.HorseWeight_5},${data.HorseNo_5},${data.HorseAge_5},${data.Remarks_5},${data.RaceRemarks_5},${data.Fluctuation_5},${data.SpurtTime_5},${data.JockeyID_5},${data.before_5},${data.GoalTime_6},${data.Venue_6},${data.HoldMonth_6},${data.Hold_6},${data.Day_6},${data.Range_6},${data.Ground_6},${data.GroundCondition_6},${data.Weather_6},${data.pace_6},${data.Weight_6},${data.TrainerID_6},${data.HorseGender_6},${data.HorseWeight_6},${data.HorseNo_6},${data.HorseAge_6},${data.Remarks_6},${data.RaceRemarks_6},${data.Fluctuation_6},${data.SpurtTime_6},${data.JockeyID_6},${data.before_6}`}
     }
     const multiProgressber = multiProgress()
     const Raceprogress = multiProgressber().addProgress(Object.keys(dicRace).length, 20, 'Race')
     for (const strRaceID of Object.keys(dicRace)) {
         const RaceID = Number(strRaceID)
-
         const pacedata = pace[RaceID]
         const predictPace = await Predict(pacedata, shell)
 
@@ -223,7 +222,7 @@ export default async function CreateRacePredictData(value: EntRaceInfomationData
             const Rotation = dicRotation[RaceID][HorseID]
             const Achievement = dicAchievement[RaceID][HorseID]
 
-            const rowAptitude = `aptitude,0,${info.Venue},${info.Range},${info.Weather}.${info.Ground},${info.GroundCondition},${predictPace},${info.HoldMonth},${info.Hold},${Horsevalue.HorseNo},${info.Day},${Horsevalue.Weight},${Horsevalue.TrainerID},${Horsevalue.HorseGender},${Horsevalue.HorseWeight},${Horsevalue.Fluctuation},${Horsevalue.Jockey},${Horsevalue.HorseAge},${Aptitude.Aptitude},${blood}`
+            const rowAptitude = `aptitude,0,${info.Venue},${info.Range},${info.Weather},${info.Ground},${info.GroundCondition},${predictPace},${info.HoldMonth},${info.Hold},${Horsevalue.HorseNo},${info.Day},${Horsevalue.Weight},${Horsevalue.TrainerID},${Horsevalue.HorseGender},${Horsevalue.HorseWeight},${Horsevalue.Fluctuation},${Horsevalue.Jockey},${Horsevalue.HorseAge},${Aptitude.Aptitude},${blood}`
             const rowRotation = `rotation,0,${info.Direction},${info.Venue},${info.HoldMonth},${info.Hold},${info.Day},${info.Range},${info.Ground},${info.GroundCondition},${info.Weather},${predictPace},${Horsevalue.Weight},${Horsevalue.TrainerID},${Horsevalue.HorseGender},${Horsevalue.HorseWeight},${Horsevalue.HorseNo},${Horsevalue.HorseAge},${Horsevalue.Fluctuation},${Horsevalue.Jockey},0,${Rotation.Rotation}`
             const rowAchievement = `achievement,0,${info.Venue},${info.Range},${info.Ground},${info.GroundCondition},${info.HoldMonth},${info.Hold},${info.Day},${info.Weather},${predictPace},${Horsevalue.HorseAge},${Horsevalue.Weight},${Horsevalue.TrainerID},${Horsevalue.HorseGender},${Horsevalue.HorseWeight},${Horsevalue.HorseNo},${Horsevalue.Fluctuation},${Horsevalue.Jockey},${Achievement.Achievement}`
 
@@ -279,7 +278,7 @@ function CreatePaceData(value: EntPaceData[]) {
         }
     } = {}
     for(const data of value){
-        const RaceID = data.RaceID
+        const RaceID = data.ID
         if (dic[RaceID] == undefined) {
             dic[RaceID] = {}
             for (let i = 1; i <= 24; i++) {
@@ -304,7 +303,7 @@ function CreatePaceData(value: EntPaceData[]) {
                     row += `,${data.HorseAge},${data.HorseGender},${data.HorseWeight},${data.Fluctuation},${data.Weight},${data.JockeyID},${data.Pace_1},${data.Passage1_1},${data.Passage2_1},${data.Passage3_1},${data.Passage4_1},${data.Pace_2},${data.Passage1_2},${data.Passage2_2},${data.Passage3_2},${data.Passage4_2},${data.Pace_3},${data.Passage1_3},${data.Passage2_3},${data.Passage3_3},${data.Passage4_3},${data.Pace_4},${data.Passage1_4},${data.Passage2_4},${data.Passage3_4},${data.Passage4_4},${data.Pace_5},${data.Passage1_5},${data.Passage2_5},${data.Passage3_5},${data.Passage4_5}`
                 }
             } else {
-                row += `,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`
+                row += `,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None,None`
             }
         }
         rows[RaceID] = row

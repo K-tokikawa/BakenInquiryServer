@@ -74,6 +74,7 @@ async function executeStatement(connection: Connection, sql: string) {
         // console.log('request')
         const request = new Request(sql, function (err: any) {
             if (err) {
+                console.log(sql);
                 console.log(err);
             }
             connection.close();
