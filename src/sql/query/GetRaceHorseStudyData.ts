@@ -34,7 +34,7 @@ select
     , Age
     , Popularity
     , HorseGender
-    , isnull(HorseWeight, lead(HorseWeight)over(partition by RHI.HorseID order by RHI.num)) as HorseWeight
+    , isnull(isnull(HorseWeight, lead(HorseWeight)over(partition by RHI.HorseID order by RHI.num)), 0) as HorseWeight
     , HorseNo
     , HorseAge
     , isnull(Passage1, 0) as Passage1
@@ -66,7 +66,7 @@ from (
         , RI.Ground
         , RI.GroundCondition
         , RI.Round
-        , RT.pace
+        , isnull(RT.pace,0) as pace
         , RHI.Weight
         , convert(int, RHI.TrainerID) as TrainerID
         , RHI.HorseAge as Age

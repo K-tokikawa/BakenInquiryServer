@@ -54,7 +54,7 @@ WITH (
                 let success = true
                 while (success) {
                     try {
-                        FileUtil.DeleteFile(filepath)
+                        // FileUtil.DeleteFile(filepath)
                         success = false
                     }
                     catch (error) {

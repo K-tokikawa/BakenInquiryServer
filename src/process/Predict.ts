@@ -14,6 +14,7 @@ import { PythonShell } from "python-shell"
 import GetRaceHorseInfomationData from "../sql/query/GetRaceHorseInfomationData"
 import EntPaceData from "../sql/Entity/EntPaceData"
 import GetPaceData from "../sql/query/GetPaceData"
+import FileUtil from "../FileUtil"
 
 export default async function CreateRacePredictData(value: EntRaceInfomationData[], shell: PythonShell) {
     const ProgressBar = simpleProgress()

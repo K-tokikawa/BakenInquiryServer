@@ -38,7 +38,6 @@ export default async function process(Year: number, Month: number, HoldDay: numb
     const value = await sql.Execsql() as EntRaceInfomationData[]
     const predictdata = await CreateRacePredictData(value, shell)
     const res = await GetNodeTree(predictdata, predictRacedata.cancelHorseNo, shell)
-    FileUtil.OutputFile(JSON.stringify(res).split('\n'), 'text.txt')
     return res
 
 }
@@ -219,7 +218,6 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number, Venue: 
             // 開催が合っているかの確認
             // 11Rなのはページが用意されている確率が高いから
             const checkRaceID = `${Year}${ClassRace.VenueCode[VenueNum]}${strHold}${strDay}11`
-            console.log(checkRaceID)
             const memberurl = `https://race.netkeiba.com/race/shutuba.html?race_id=${checkRaceID}&rf=race_submenu`
             const axios: AxiosBase = new AxiosBase(memberurl)
             const page = await axios.GET() as Buffer
@@ -332,7 +330,7 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number, Venue: 
     const Aptitude = new BulkInsert(insertDic.strPassage, 'AptitudeTable')
     await Aptitude.BulkInsert('AptitudeTable_')
     const Rotation = new BulkInsert(insertDic.data, 'RotationTable')
-    await Rotation.BulkInsert('RotationTable_')
+    await Rotation.BulkInsert(`RotationTable_`)
     RaceData.predictRaceID = predictRaceID
     RaceData.cancelHorseNo = cancelHorseNo
     return RaceData
