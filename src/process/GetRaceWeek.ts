@@ -29,6 +29,7 @@ import GetRace from '../sql/query/GetRace'
 import DeleteRaceRecord from '../sql/query/DeleteUpdateRaceRecord'
 import UpdateSystemID from '../sql/query/UpdateSystemID'
 import FileUtil from '../FileUtil'
+import DeleteUpdateRaceHorseRecord from '../sql/query/DeleteUpdateRaceHorseRecord'
 
 export default async function process(Year: number, Month: number, HoldDay: number, Venue: number[], Round: number[], shell: PythonShell) {
     const predictRacedata = await GetRaceWeek(Year, Month, HoldDay, Venue, Round)
@@ -103,6 +104,9 @@ async function GetNodeTree(
         })
         let rank = 0
         for (const val of result) {
+            if (datas[val.HorseNo - 1] == undefined) {
+                continue
+            }
             let Mark = ''
             rank++
             if (rank == 1) {
@@ -169,7 +173,9 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number, Venue: 
     if (registerdRaceIDs.length > 0){
         const deletesql = new PrmStudyData(registerdRaceIDs)
         const sql = new DeleteRaceRecord(deletesql)
+        const sql_Horse = new DeleteUpdateRaceHorseRecord(deletesql)
         sql.Execsql()
+        sql_Horse.Execsql()
     }
 
     const dateID = `${Year}${strMonth}${strDay}`
@@ -217,7 +223,7 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number, Venue: 
 
             // 開催が合っているかの確認
             // 11Rなのはページが用意されている確率が高いから
-            const checkRaceID = `${Year}${ClassRace.VenueCode[VenueNum]}${strHold}${strDay}11`
+            let checkRaceID = `${Year}${ClassRace.VenueCode[VenueNum]}${strHold}${strDay}11`
             const memberurl = `https://race.netkeiba.com/race/shutuba.html?race_id=${checkRaceID}&rf=race_submenu`
             const axios: AxiosBase = new AxiosBase(memberurl)
             const page = await axios.GET() as Buffer
@@ -235,7 +241,15 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number, Venue: 
                 RaceID++
                 const strRound = Round < 10 ? `0${Round}` : `${Round}`
                 const VenueCode = ClassRace.VenueCode[VenueNum]
-                const strRaceID = `${Year}${VenueCode}${strHold}${strDay}${strRound}`
+                let strRaceID = `${Year}${VenueCode}${strHold}${strDay}${strRound}`
+                // if (VenueNum == 9) {
+                //     strRaceID = '202309050111'
+                // }
+
+                // if (VenueNum == 6) {
+                //     strRaceID = '202306050111'
+                // }
+
                 const memberurl = `https://race.netkeiba.com/race/shutuba.html?race_id=${strRaceID}&rf=race_submenu`
 
                 const axios: AxiosBase = new AxiosBase(memberurl)
@@ -294,10 +308,8 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number, Venue: 
             }
             if (raceparam.length > 0) {
                 const horsesql = new SQLRegisterRaceHorseInfo(horseparam)
-                console.log('Horse')
                 await horsesql.BulkInsert('Horse')
                 const racesql = new SQLRegisterRaceInfo(raceparam)
-                console.log('Race')
                 await racesql.BulkInsert('Race')
                 const horseupdate = new PrmStudyData([], RaceHorseID, 3)
                 const horseupdatesql = new UpdateSystemID(horseupdate)
@@ -323,8 +335,6 @@ async function GetRaceWeek(Year: number, Month: number, HoldDay: number, Venue: 
     const deletesql = new DeletePredictRecord(param)
     await deletesql.Execsql()
     const insertDic = mgr.insertDic
-    const pace = new BulkInsert(insertDic.pace, 'PaceTable')
-    await pace.BulkInsert('PaceTable_')
     const Achievement = new BulkInsert(insertDic.strAchievement, 'AchievementTable')
     await Achievement.BulkInsert('AchievementTable_')
     const Aptitude = new BulkInsert(insertDic.strPassage, 'AptitudeTable')
@@ -402,18 +412,19 @@ function PageAnalysis(pages: string[], ID: number, RaceID: string, Venue: string
             weather = 4
         }
 
-        if (line.match(/良/)){
+        if (line.match(/馬場:良/)){
             groundcondition = 1
         }
-        if (line.match(/稍/)){
+        if (line.match(/馬場:稍/)){
             groundcondition = 2
         }
-        if (line.match(/重/)){
+        if (line.match(/馬場:重/)){
             groundcondition = 3
         }
-        if (line.match(/不/)){
+        if (line.match(/馬場:不/)){
             groundcondition = 4
         }
+        
         if (line.match(/Waku[0-9]/)) {
             GateNo = Number(line.match(/(?<=\<span\>).*?(?=\<\/span\>)/)?.[0] as string)
             if (dicHorse[GateNo] == undefined) {

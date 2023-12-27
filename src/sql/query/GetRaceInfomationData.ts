@@ -47,6 +47,8 @@ from RaceInfomation as RI
             RHI.RaceID
             , count(isnull(RHI.HorseID, 0)) as hc
         from RaceHorseInfomation as RHI
+        where
+            RHI.HorseID is not null
         group by
             RHI.RaceID
     ) as RHI

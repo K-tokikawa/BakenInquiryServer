@@ -45,7 +45,7 @@ select
     , isnull(Fluctuation, 0) as Fluctuation
     , RaceRemarks
     , Remarks
-    , JockeyID
+    , isnull(JockeyID, 0) as JockeyID
     , lag(RHI.HoldDay)over(partition by RHI.HorseID order by RHI.num) as before
     , num
 from (

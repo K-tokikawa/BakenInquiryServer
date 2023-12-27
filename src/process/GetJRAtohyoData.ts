@@ -17,7 +17,7 @@ export default async function process(jsessionid: string, m: string, mindate: st
 }
 
 function DateFormat(date: string){
-    return new Date(`${date.slice(0, 3)}-${date.slice(4, 6)}-${date.slice(7, 8)}`)
+    return new Date(`${date.slice(0, 4)}-${date.slice(4, 6)}-${date.slice(6, 8)}`)
 }
 
 async function GetJRAtohyoCSVData(jsessionid: string, m: string, mindate: Date, maxdate: Date) {
@@ -42,13 +42,11 @@ async function GetJRAtohyoCSVData(jsessionid: string, m: string, mindate: Date, 
         .forEach(row => {
             (p = p.then(async() => {
                 const csvdate = row.match(/(?<="DATE" value=").*?(?=")/)?.[0]
-                console.log(csvdate)
 
                 const date = new Date(`${csvdate?.substring(0, 4)}-${csvdate?.substring(4, 6)}-${csvdate?.substring(6, 8)}`)
-                const mindate = new Date('2023-06-16')
+                const mindate = new Date('2023-07-15')
                 if (date >= mindate)
                 {
-                    console.log(date)
                     const m = row.match(/(?<="m" value=").*?(?=")/)?.[0]
                     if (typeof (csvdate) == 'string' && typeof (m) == 'string') {
                         const axios030 = new AxiosBase('https://www.nvinq.jra.go.jp/jra/servlet/JRAWeb030')
