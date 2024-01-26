@@ -46,7 +46,21 @@ export default async function process(Year: number, Month: number, HoldDay: numb
 
 async function GetAnalysisData(Year: number, Month: number, HoldDay: number, Venue: number[], Rounds: number[])
 {
+    const raceIDparam = new PrmStudyData([], Year, Month, HoldDay, Venue)
+    const raceIDsql = new GetRace(raceIDparam)
+    const registerdRace = await raceIDsql.Execsql()
+
+    const registerdRaceIDs = registerdRace.map(x => {return x.RaceID})
+    if (registerdRaceIDs.length > 0){
+        const deletesql = new PrmStudyData(registerdRaceIDs)
+        const sql = new DeleteRaceRecord(deletesql)
+        const sql_Horse = new DeleteUpdateRaceHorseRecord(deletesql)
+        sql.Execsql()
+        sql_Horse.Execsql()
+    }
+
     const lstClassRace: ClassRace[] = []
+
     for (const VenueNum of Venue) {
 
         const sqlHold = new GetVenueMaxHold(Year, VenueNum)
