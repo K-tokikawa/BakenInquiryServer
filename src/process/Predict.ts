@@ -13,8 +13,18 @@ import simpleProgress, { multiProgress } from "./ProgressBar"
 import { PythonShell } from "python-shell"
 import GetRaceHorseInfomationData from "../sql/query/GetRaceHorseInfomationData"
 import FileUtil from "../FileUtil"
+import GetRaceInfomationData from "../sql/query/GetRaceInfomationData"
 
-export default async function CreateRacePredictData(value: EntRaceInfomationData[], shell: PythonShell) {
+export default async function CreateRacePredictData(RaceData: {
+    predictRaceID: number[]
+    cancelHorseNo: {
+        [RaceID: number]: number[]
+    }
+}, shell: PythonShell) {
+    // // /**DBに登録した予測用のデータで予測を行う */
+    const predictparam = new PrmStudyData(RaceData.predictRaceID)
+    const sql = new GetRaceInfomationData(predictparam)
+    const value = await sql.Execsql() as EntRaceInfomationData[]
     const ProgressBar = simpleProgress()
     const rows: {
         [RaceID: number]: {

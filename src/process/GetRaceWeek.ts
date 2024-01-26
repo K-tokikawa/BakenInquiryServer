@@ -34,11 +34,7 @@ import DeleteUpdateRaceHorseRecord from '../sql/query/DeleteUpdateRaceHorseRecor
 export default async function process(Year: number, Month: number, HoldDay: number, Venue: number[], Round: number[], shell: PythonShell) {
     const AnalysisData = await GetAnalysisData(Year, Month, HoldDay, Venue, Round)
     const predictRacedata = await RegisterData(AnalysisData)
-    const param = new PrmStudyData(predictRacedata.predictRaceID)
-    // // /**DBに登録した予測用のデータで予測を行う */
-    const sql = new GetRaceInfomationData(param)
-    const value = await sql.Execsql() as EntRaceInfomationData[]
-    const predictdata = await CreateRacePredictData(value, shell)
+    const predictdata = await CreateRacePredictData(predictRacedata, shell)
     const res = await GetNodeTree(predictdata, predictRacedata.cancelHorseNo, shell)
     return res
 
@@ -443,8 +439,6 @@ async function CheckHold(Year: number, VenueNum: number, strHold: string, strDay
     const axios: AxiosBase = new AxiosBase(memberurl)
     const page = await axios.GET() as Buffer
     const pageElement = iconv.decode(page, 'eucjp')
-    console.log(!pageElement.match(/RaceName/))
-    FileUtil.OutputFile(pageElement.split('\n'), 'check.txt')
     return pageElement.match(/RaceName/)
 }
 
