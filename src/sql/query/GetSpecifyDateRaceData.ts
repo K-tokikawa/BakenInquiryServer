@@ -1,7 +1,7 @@
 import SQLBase from "../../class/SQLBase"
 import EntRaceInfomationData from "../Entity/EntRaceInfomationData"
 import PrmGetSpecifyDateRaceData from "../param/PrmGetSpecifyDateRaceData"
-export default class GetAchievementData extends SQLBase<EntRaceInfomationData[]>
+export default class GetSpecifyDateRaceData extends SQLBase<EntRaceInfomationData[]>
 {
     private parameter: PrmGetSpecifyDateRaceData
 

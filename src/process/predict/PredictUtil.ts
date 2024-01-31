@@ -16,6 +16,76 @@ import IFPredictRows from "../../IF/IFPredictRows"
 import IFDicPredictData from "../../IF/IFDicPredictData"
 import GetHorseIDBloodStudyData_Blood from "../../sql/query/GetHorseIDBloodStudyData_Blood"
 import EntBloodStudyData_Blood from "../../sql/Entity/EntBloodStudyData_Blood"
+import GetRaceHorseInfomationData from "../../sql/query/GetRaceHorseInfomationData"
+import EntRaceHorseInfomationData from "../../sql/Entity/EntRaceHorseInfomationData"
+import IFDicHorseInfomation from "../../IF/IFDicHorseInfomation"
+import GetRaceInfomationData from "../../sql/query/GetRaceInfomationData"
+import EntRaceInfomationData from "../../sql/Entity/EntRaceInfomationData"
+
+export async function GetDicRace(
+    predictRaceID: number[],
+    ProgressBar: (maxCount: number, progressLength: number, title: string) => (addCount: number) => boolean
+): Promise<[IFDicRace, number[]]>{
+    const predictparam = new PrmStudyData(predictRaceID)
+    const sql = new GetRaceInfomationData(predictparam)
+    const value = await sql.Execsql() as EntRaceInfomationData[]
+    const dicRace:IFDicRace = {}
+
+
+    const initprogress = ProgressBar(Object.keys(dicRace).length, 20, 'init')
+    value.map(x => {
+        initprogress(1)
+        dicRace[x.ID] = {
+            Venue: x.Venue,
+            VenueName: x.VenueName,
+            Direction: x.Direction,
+            Range: x.Range,
+            Ground: x.Ground,
+            GroundName: x.GroundName,
+            GroundCondition: x.GroundCondition,
+            Weather: x.Weather,
+            Hold: x.Hold,
+            Day: x.Day,
+            HoldMonth: x.HoldMonth,
+            Round: x.Round
+        }
+    })
+    const RaceIDs = value.map(x => {return x.ID})
+    return [dicRace, RaceIDs]
+}
+
+export async function GetDicHorseInfomation(
+    RaceIDs : number[],
+    dicRace:IFDicRace,
+    ProgressBar: (maxCount: number, progressLength: number, title: string) => (addCount: number) => boolean
+): Promise<[IFDicHorseInfomation, number[]]>{
+    const param = new PrmStudyData(RaceIDs)
+    const HorseIDssql = new GetRaceHorseInfomationData(param)
+    const HorseIDsvalue = await HorseIDssql.Execsql() as EntRaceHorseInfomationData[]
+    const dicHorse: IFDicHorseInfomation = {}
+    const horseprogress = ProgressBar(Object.keys(dicRace).length, 20, 'horse')
+    for (const data of HorseIDsvalue) {
+        horseprogress(1)
+        if (dicHorse[data.RaceID] == undefined) {
+            dicHorse[data.RaceID] = {}
+        }
+        dicHorse[data.RaceID][data.HorseID] = {
+            Jockey: data.JockeyID,
+            Rank : 0,
+            HorseName: data.Name,
+            HorseNo : data.HorseNo,
+            HorseAge: data.HorseAge,
+            HorseGender: data.HorseGender,
+            HorseWeight: data.HorseWeight,
+            Weight: data.Weight,
+            TrainerID: data.TrainerID,
+            Fluctuation: data.Fluctuation,
+            Popularity: data.Popularity
+        }
+    }
+    const HorseIDs = Array.from(new Set(HorseIDsvalue.map(x => {return x.HorseID})))
+    return [dicHorse, HorseIDs]
+}
 
 export async function GetBloodPredictData(HorseIDs: number[]){
     const bloodparam = new PrmStudyData(HorseIDs)
@@ -86,11 +156,11 @@ export async function GetPredictRows(RaceID: number, dicpredict: IFDicPredictDat
 }
 
 export async function GetDicAptitudeData(
-    param : PrmStudyData,
+    RaceIDs : number[],
     dicRace: IFDicRace,
     ProgressBar: (maxCount: number, progressLength: number, title: string) => (addCount: number) => boolean
     ){
-
+    const param = new PrmStudyData(RaceIDs)
     const Aptitudesql = new GetAptitudeData(param)
     const Aptitude = await Aptitudesql.Execsql() as EntAptitudeData[]
     const dicAptitude: {
@@ -112,10 +182,11 @@ export async function GetDicAptitudeData(
 }
 
 export async function GetDicRotationData(
-    param : PrmStudyData,
+    RaceIDs : number[],
     dicRace: IFDicRace,
     ProgressBar: (maxCount: number, progressLength: number, title: string) => (addCount: number) => boolean
 ){
+    const param = new PrmStudyData(RaceIDs)
     const Rotationsql = new GetRotationData(param)
     const Rotation = await Rotationsql.Execsql() as EntRotationData[]
     const dicRotation: {
@@ -138,10 +209,11 @@ export async function GetDicRotationData(
 }
 
 export async function GetDicAchievementData(
-    param : PrmStudyData,
+    RaceIDs : number[],
     dicRace: IFDicRace,
     ProgressBar: (maxCount: number, progressLength: number, title: string) => (addCount: number) => boolean
 ){
+    const param = new PrmStudyData(RaceIDs)
     const Achievementsql = new GetAchievementData(param)
     const Achievement = await Achievementsql.Execsql() as EntAchievementData[]
     const dicAchievement: {

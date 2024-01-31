@@ -8,12 +8,13 @@ import { PythonShell } from "python-shell"
 import GetRaceHorseInfomationData from "../../sql/query/GetRaceHorseInfomationData"
 import GetRaceInfomationData from "../../sql/query/GetRaceInfomationData"
 import { IFDicRace } from "../../IF/IFDicRace"
-import { GetBloodPredictData, GetDicAchievementData, GetDicAptitudeData, GetDicRotationData, GetHorsePredictData, GetPredictRows} from "./PredictUtil"
+import { GetBloodPredictData, GetDicAchievementData, GetDicAptitudeData, GetDicHorseInfomation, GetDicRace, GetDicRotationData, GetHorsePredictData, GetPredictRows} from "./PredictUtil"
 import IFAptitude from "../../IF/IFDicAptitude"
 import IFDicRotation from "../../IF/IFDicRotation"
 import IFDicAchievement from "../../IF/IFDicAchievement"
 import IFPredictRows from "../../IF/IFPredictRows"
 import IFDicPredictData from "../../IF/IFDicPredictData"
+import IFDicHorseInfomation from "../../IF/IFDicHorseInfomation"
 
 export default async function CreateRacePredictData(RaceData: {
     predictRaceID: number[]
@@ -22,82 +23,18 @@ export default async function CreateRacePredictData(RaceData: {
     }
 }, shell: PythonShell) {
     // // /**DBに登録した予測用のデータで予測を行う */
-    const predictparam = new PrmStudyData(RaceData.predictRaceID)
-    const sql = new GetRaceInfomationData(predictparam)
-    const value = await sql.Execsql() as EntRaceInfomationData[]
     const ProgressBar = simpleProgress()
     let predictrows: IFPredictRows = {}
-    const dicRace:IFDicRace = {}
-
     const dicpredict: IFDicPredictData = {}
 
-    const initprogress = ProgressBar(Object.keys(dicRace).length, 20, 'init')
-    value.map(x => {
-        initprogress(1)
-        dicRace[x.ID] = {
-            Venue: x.Venue,
-            VenueName: x.VenueName,
-            Direction: x.Direction,
-            Range: x.Range,
-            Ground: x.Ground,
-            GroundName: x.GroundName,
-            GroundCondition: x.GroundCondition,
-            Weather: x.Weather,
-            Hold: x.Hold,
-            Day: x.Day,
-            HoldMonth: x.HoldMonth,
-            Round: x.Round
-        }
-    })
-    const RaceIDs = value.map(x => {return x.ID})
-    const param = new PrmStudyData(RaceIDs)
-
-    const HorseIDssql = new GetRaceHorseInfomationData(param)
-    const HorseIDsvalue = await HorseIDssql.Execsql() as EntRaceHorseInfomationData[]
-    const dicHorse: {
-        [RaceID: number]: {
-            [HorseID: number]: {
-                Jockey: number,
-                Rank: number,
-                HorseName: string,
-                HorseNo: number
-                HorseAge: number,
-                HorseGender: number,
-                HorseWeight: number,
-                Weight: number,
-                TrainerID: number,
-                Fluctuation: number,
-                Popularity: number
-            }
-        }
-    } = {}
-    const horseprogress = ProgressBar(Object.keys(dicRace).length, 20, 'horse')
-    for (const data of HorseIDsvalue) {
-        horseprogress(1)
-        if (dicHorse[data.RaceID] == undefined) {
-            dicHorse[data.RaceID] = {}
-        }
-        dicHorse[data.RaceID][data.HorseID] = {
-            Jockey: data.JockeyID,
-            Rank : 0,
-            HorseName: data.Name,
-            HorseNo : data.HorseNo,
-            HorseAge: data.HorseAge,
-            HorseGender: data.HorseGender,
-            HorseWeight: data.HorseWeight,
-            Weight: data.Weight,
-            TrainerID: data.TrainerID,
-            Fluctuation: data.Fluctuation,
-            Popularity: data.Popularity
-        }
-    }
-    const HorseIDs = Array.from(new Set(HorseIDsvalue.map(x => {return x.HorseID})))
+    const [dicRace, RaceIDs] = await GetDicRace(RaceData.predictRaceID, ProgressBar)
+    const [dicHorse, HorseIDs] = await GetDicHorseInfomation(RaceIDs, dicRace, ProgressBar)
 
     const blooddata: {[ID: number]: string} = await GetBloodPredictData(HorseIDs)
 
-    const dicAptitude: IFAptitude = await GetDicAptitudeData(param, dicRace, ProgressBar)
-    const dicAchievement: IFDicAchievement = await GetDicAchievementData(param, dicRace, ProgressBar)
-    const dicRotation: IFDicRotation = await GetDicRotationData(param, dicRace, ProgressBar)
+    const dicAptitude: IFAptitude = await GetDicAptitudeData(RaceIDs, dicRace, ProgressBar)
+    const dicAchievement: IFDicAchievement = await GetDicAchievementData(RaceIDs, dicRace, ProgressBar)
+    const dicRotation: IFDicRotation = await GetDicRotationData(RaceIDs, dicRace, ProgressBar)
 
     const multiProgressber = multiProgress()
     const Raceprogress = multiProgressber().addProgress(Object.keys(dicRace).length, 20, 'Race')
