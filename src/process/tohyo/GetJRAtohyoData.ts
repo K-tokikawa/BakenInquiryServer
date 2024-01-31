@@ -1,11 +1,11 @@
 import iconv from 'iconv-lite'
-import JRAtohyoClass from '../class/JRAtohyoClass'
-import JRABettingRaceResultClass from '../class/JRABettingRaceResultClass'
-import { AxiosBase } from '../class/AxiosBase'
-import AxiosResponseClass from '../class/AxiosResponseClass'
-import JRATotalBettingtohyoClass from '../class/JRATotalBettingtohyoClass'
-import JRADayBettingtohyoClass from '../class/JRADayBettingtohyoClass'
-import CreateTreeRoot from './CreateTreeRoot'
+import JRAtohyoClass from '../../class/JRAtohyoClass'
+import JRABettingRaceResultClass from '../../class/JRABettingRaceResultClass'
+import { AxiosBase } from '../../class/AxiosBase'
+import AxiosResponseClass from '../../class/AxiosResponseClass'
+import JRATotalBettingtohyoClass from '../../class/JRATotalBettingtohyoClass'
+import JRADayBettingtohyoClass from '../../class/JRADayBettingtohyoClass'
+import CreateTreeRoot from '../predict/CreateTreeRoot'
 
 export default async function process(jsessionid: string, m: string, mindate: string, maxdate: string) {
     const min = DateFormat(mindate)

@@ -1,7 +1,7 @@
-import JRABettingRaceResultClass from "../class/JRABettingRaceResultClass";
-import JRADayBettingtohyoClass, { dictionary } from "../class/JRADayBettingtohyoClass";
-import JRATotalBettingtohyoClass, { DicDayRascetohyo } from "../class/JRATotalBettingtohyoClass";
-import {IFInquiryTreeNode, IFInquiryParentTreeNode} from '../IF/IFInquiryTreeNode'
+import JRABettingRaceResultClass from "../../class/JRABettingRaceResultClass";
+import JRADayBettingtohyoClass, { dictionary } from "../../class/JRADayBettingtohyoClass";
+import JRATotalBettingtohyoClass, { DicDayRascetohyo } from "../../class/JRATotalBettingtohyoClass";
+import {IFInquiryTreeNode, IFInquiryParentTreeNode} from '../../IF/IFInquiryTreeNode'
 
 interface ChildrenResult {
     [key: string | number]: IFInquiryTreeNode[]

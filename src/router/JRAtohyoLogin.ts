@@ -1,5 +1,5 @@
 import express from "express"
-import process from '../process/JRAtohyoLogin'
+import process from '../process/tohyo/JRAtohyoLogin'
 const router: express.Router = express.Router();
 // curl http://localhost:9999/JRAtohyoLogin -H "Content-Type:application/json" -d "{\"UID\":\"12345678\",\"PWD\":\"****\",\"PARS\":\"20XX\"}"
 router.post('/JRAtohyoLogin', function (req, res, next) {

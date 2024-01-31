@@ -1,6 +1,6 @@
-import { AxiosBase } from '../class/AxiosBase'
+import { AxiosBase } from '../../class/AxiosBase'
 import iconv from 'iconv-lite'
-import ClassRace from '../class/ClassRace'
+import ClassRace from '../../class/ClassRace'
 import { PythonShell } from 'python-shell'
 
 
