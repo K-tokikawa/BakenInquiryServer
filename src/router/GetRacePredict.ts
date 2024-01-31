@@ -10,8 +10,7 @@ router.post('/GetRacePredict', function (req, res, next) {
     const Venue:number[] = req.body.Venue
     const Round: number[] = req.body.Rounds
     console.log(`${Year}_${Month}_${HoldDay}`)
-    const shell = new PythonShell('./src/python/whilepredict.py')
-    process(Year, Month, HoldDay, Venue, Round, shell)
+    process(Year, Month, HoldDay, Venue, Round)
         .then(result => {
             res.send(result)
         })

@@ -21,6 +21,7 @@ import EntRaceHorseInfomationData from "../../sql/Entity/EntRaceHorseInfomationD
 import IFDicHorseInfomation from "../../IF/IFDicHorseInfomation"
 import GetRaceInfomationData from "../../sql/query/GetRaceInfomationData"
 import EntRaceInfomationData from "../../sql/Entity/EntRaceInfomationData"
+import { multiProgress } from "../ProgressBar"
 
 export async function GetDicRace(
     predictRaceID: number[],
@@ -130,6 +131,76 @@ export async function GetHorsePredictData(
     return `,${Blood},${Jockey},${preAchievement},${preRotation},${preAptitude}`
 }
 
+export async function GetPredictData(
+    HorseIDs: number[],
+    RaceIDs: number[],
+    dicRace:IFDicRace,
+    dicHorse: IFDicHorseInfomation,
+    shell: PythonShell,
+    ProgressBar: (maxCount: number, progressLength: number, title: string) => (addCount: number) => boolean
+    ){
+    const dicpredict: IFDicPredictData = {}
+    const blooddata: {[ID: number]: string} = await GetBloodPredictData(HorseIDs)
+
+    const dicAptitude: IFAptitude = await GetDicAptitudeData(RaceIDs, dicRace, ProgressBar)
+    const dicAchievement: IFDicAchievement = await GetDicAchievementData(RaceIDs, dicRace, ProgressBar)
+    const dicRotation: IFDicRotation = await GetDicRotationData(RaceIDs, dicRace, ProgressBar)
+
+    const multiProgressber = multiProgress()
+    const Raceprogress = multiProgressber().addProgress(Object.keys(dicRace).length, 20, 'Race')
+
+    const predictrows: IFPredictRows = {}
+
+    for (const strRaceID of Object.keys(dicRace)) {
+        const RaceID = Number(strRaceID)
+
+        const info = dicRace[RaceID]
+        if (dicpredict[RaceID] == undefined) {
+            dicpredict[RaceID] = {
+                info: `,${info.Venue},${info.Range},${info.Ground},${info.GroundCondition},${info.Weather},${info.Hold},${info.Day}`,
+                Horses:[]
+            }
+        }
+        for (let no = 1; no <= 24; no++ ){
+            dicpredict[RaceID].Horses[no]={
+                horsepredictdata:',None,None,None,None,None',
+                rank:-1,
+                Name: ''
+            }
+        }
+        const Horse = dicHorse[RaceID]
+
+        const predictprogress = multiProgressber().addProgress(Object.keys(Horse).length, 20, 'predict')
+        for (const strHorseID of Object.keys(Horse)) {
+            predictprogress.addCount(1)
+            const HorseID = Number(strHorseID)
+            const Horsevalue = Horse[HorseID]
+
+            const HorsePredictData = await GetHorsePredictData(
+                RaceID,
+                HorseID,
+                Horsevalue,
+                info,
+                blooddata,
+                dicAptitude,
+                dicAchievement,
+                dicRotation,
+                shell
+                )
+
+            dicpredict[RaceID].Horses[Horsevalue.HorseNo] = {
+                horsepredictdata: HorsePredictData,
+                rank: Horsevalue.Rank,
+                Name: Horsevalue.HorseName
+            }
+        }
+        predictrows[RaceID] = await GetPredictRows(RaceID, dicpredict)
+        predictprogress.del()
+        Raceprogress.addCount(1)
+    }
+
+    return predictrows
+}
 export async function GetPredictRows(RaceID: number, dicpredict: IFDicPredictData){
     const predictrows: IFPredictRows = {}
     for (const strHorseNo of Object.keys(dicpredict[RaceID].Horses)) {
@@ -152,7 +223,7 @@ export async function GetPredictRows(RaceID: number, dicpredict: IFDicPredictDat
             }
         }
     }
-    return predictrows
+    return predictrows[RaceID]
 }
 
 export async function GetDicAptitudeData(

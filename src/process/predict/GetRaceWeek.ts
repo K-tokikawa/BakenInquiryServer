@@ -12,15 +12,11 @@ import PrmGetSYSTEMCurrentID from '../../sql/param/PrmGetSYSTEMCurrentID'
 import GetSYSTEMCurrentID from '../../sql/query/SQLGetSYSTEMCurrentID'
 import EntSYSTEMCurrentID from '../../sql/Entity/EntSYSTEMCurrentID'
 import asEnumrable from 'linq-es5'
-import GetRaceInfomationData from '../../sql/query/GetRaceInfomationData'
 import CreateRacePredictData from './Predict'
 import PrmStudyData from '../../sql/param/PrmStudyData'
-import EntRaceInfomationData from '../../sql/Entity/EntRaceInfomationData'
 import MgrRaceData from '../../Manager/MgrRaceData'
 import GetRaceHorseStudyData from '../../sql/query/GetRaceHorseStudyData'
 import EntRaceHorseStudyData from '../../sql/Entity/EntRaceHorseStudyData'
-import BulkInsert from '../../sql/query/BulkInsert'
-import DeletePredictRecord from '../../sql/query/DeletePredictRecord'
 import GetHorseIDs from '../../sql/query/GetHorseIDs'
 import { PythonShell } from 'python-shell'
 import {IFPredictParentTreeNode, IFPredictTreeNode} from '../../IF/IFPredictTreeNode'
@@ -28,11 +24,13 @@ import InitRaceInfomation from '../../sql/query/InitRaceInfomation'
 import GetRace from '../../sql/query/GetRace'
 import DeleteRaceRecord from '../../sql/query/DeleteUpdateRaceRecord'
 import UpdateSystemID from '../../sql/query/UpdateSystemID'
-import FileUtil from '../../FileUtil'
 import DeleteUpdateRaceHorseRecord from '../../sql/query/DeleteUpdateRaceHorseRecord'
 import { Predict } from './PredictUtil'
+import DeletePredictRecord from '../../sql/query/DeletePredictRecord'
+import IFPredictRows from '../../IF/IFPredictRows'
 
-export default async function process(Year: number, Month: number, HoldDay: number, Venue: number[], Round: number[], shell: PythonShell) {
+export default async function process(Year: number, Month: number, HoldDay: number, Venue: number[], Round: number[]) {
+    const shell = new PythonShell('./src/python/whilepredict.py')
     const AnalysisData = await GetAnalysisData(Year, Month, HoldDay, Venue, Round)
     const predictRacedata = await RegisterData(AnalysisData)
     const predictdata = await CreateRacePredictData(predictRacedata, shell)
@@ -127,12 +125,6 @@ async function RegisterData(lstClassRace: ClassRace[])
     const cancelHorseNo: {
         [RaceID: number]: number[]
     } = {}
-    const RaceData: {
-        predictRaceID: number[]
-        cancelHorseNo: {
-            [RaceID: number]: number[]
-        }
-    } = {predictRaceID: [], cancelHorseNo: {}}
     const raceparam: PrmRaceInfo[] = []
     const horseparam: PrmRegisterRaceHorseInfo[] = []
 
@@ -194,29 +186,25 @@ async function RegisterData(lstClassRace: ClassRace[])
         raceupdatesql.Execsql()
 
     }
+
+    const deletesql = new DeletePredictRecord()
+    await deletesql.Execsql()
+
     const param = new PrmStudyData(predictRaceID)
     const initsql = new InitRaceInfomation(param)
     await initsql.Execsql()
     const HorseIDsql = new GetHorseIDs(param)
     const horseIDs = (await HorseIDsql.Execsql()).map(x => {return x.HorseID})
+    
 
     const studyparam = new PrmStudyData(horseIDs)
     const studydatasql = new GetRaceHorseStudyData(studyparam)
     const studydata = await studydatasql.Execsql() as EntRaceHorseStudyData[]
+
     const mgr = new MgrRaceData(studydata, predictRaceID)
     await mgr.dicCreate()
-    const deletesql = new DeletePredictRecord(param)
-    await deletesql.Execsql()
-    const insertDic = mgr.insertDic
-    const Achievement = new BulkInsert(insertDic.strAchievement, 'AchievementTable')
-    await Achievement.BulkInsert('AchievementTable_')
-    const Aptitude = new BulkInsert(insertDic.strPassage, 'AptitudeTable')
-    await Aptitude.BulkInsert('AptitudeTable_')
-    const Rotation = new BulkInsert(insertDic.data, 'RotationTable')
-    await Rotation.BulkInsert(`RotationTable_`)
-    RaceData.predictRaceID = predictRaceID
-    RaceData.cancelHorseNo = cancelHorseNo
-    return RaceData
+    await mgr.Register()
+    return {predictRaceID: predictRaceID, cancelHorseNo: cancelHorseNo}
 }
 
 function PageAnalysis(pages: string[], ID: number, RaceID: string, Venue: string, Year: number, Hold: number, Day: number, HoldMonth: number, HoldDay: number, Round: number) {
@@ -444,19 +432,7 @@ async function CheckHold(Year: number, VenueNum: number, strHold: string, strDay
 }
 
 async function GetNodeTree(
-    predictdata: {
-        [RaceID: number]: {
-            Round: number,
-            Ground: string,
-            Venue: string,
-            Horse: {
-                [HorseNo: number] : {
-                    HorseName: string,
-                    predict: string
-                }
-            }
-        }
-    },
+    predictdata: IFPredictRows,
     cancelHorseNo: {[RaceID: number]: number[]},
     shell: PythonShell
     ) {

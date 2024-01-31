@@ -4,6 +4,10 @@ import EntRaceHorseStudyData from "../sql/Entity/EntRaceHorseStudyData"
 import ClassAchievementData from "../class/ClassAchievementData"
 import ClassHorseData from "../class/ClassHorseData"
 import simpleProgress from "../process/ProgressBar"
+import PrmStudyData from "../sql/param/PrmStudyData"
+import GetRaceHorseStudyData from "../sql/query/GetRaceHorseStudyData"
+import DeletePredictRecord from "../sql/query/DeletePredictRecord"
+import BulkInsert from "../sql/query/BulkInsert"
 
 export default class MgrRaceData{
     private m_RaceData: EntRaceHorseStudyData[]
@@ -28,6 +32,10 @@ export default class MgrRaceData{
 
     public get dic(){return this.m_dic}
     public get insertDic() { return this.m_insertDic }
+
+    async addStudyData(RaceData: EntRaceHorseStudyData[]){
+        this.m_RaceData = this.m_RaceData.concat(RaceData)
+    }
 
     async dicCreate(){
         return new Promise (async (resolve) => {
@@ -193,5 +201,15 @@ export default class MgrRaceData{
             }
             resolve(true)
         })
+    }
+
+    async Register(){
+        const insertDic = this.insertDic
+        const Achievement = new BulkInsert(insertDic.strAchievement, 'AchievementTable')
+        await Achievement.BulkInsert('AchievementTable_')
+        const Aptitude = new BulkInsert(insertDic.strPassage, 'AptitudeTable')
+        await Aptitude.BulkInsert('AptitudeTable_')
+        const Rotation = new BulkInsert(insertDic.data, 'RotationTable')
+        await Rotation.BulkInsert(`RotationTable_`)
     }
 }

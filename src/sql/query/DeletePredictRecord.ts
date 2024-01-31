@@ -4,16 +4,16 @@ export default class DeletePredictRecord extends SQLBase<void>
 {
     private parameter: PrmStudyData | null
 
-    constructor(prm: PrmStudyData | null) {
+    constructor(prm: PrmStudyData | null = null) {
         super()
         this.parameter = prm
     }
     public async Execsql(): Promise<void> {
         const sql = `
-delete AchievementTable where RaceID in (${this.parameter?.IDs})
-delete AptitudeTable where RaceID in (${this.parameter?.IDs})
-delete RotationTable where RaceID in (${this.parameter?.IDs})
-delete PaceTable where RaceID in (${this.parameter?.IDs})
+delete AchievementTable
+delete AptitudeTable
+delete RotationTable
+delete PaceTable
 `
         return await this.ExecGet(sql)
     }
