@@ -11,7 +11,8 @@ export default interface IFDicHorseInfomation{
             Weight: number,
             TrainerID: number,
             Fluctuation: number,
-            Popularity: number
+            Popularity: number,
+            cancel: boolean
         }
     }
 }

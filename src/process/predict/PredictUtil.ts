@@ -81,7 +81,8 @@ export async function GetDicHorseInfomation(
             Weight: data.Weight,
             TrainerID: data.TrainerID,
             Fluctuation: data.Fluctuation,
-            Popularity: data.Popularity
+            Popularity: data.Popularity,
+            cancel: data.Remark != 0
         }
     }
     const HorseIDs = Array.from(new Set(HorseIDsvalue.map(x => {return x.HorseID})))
@@ -153,8 +154,13 @@ export async function GetPredictData(
 
     for (const strRaceID of Object.keys(dicRace)) {
         const RaceID = Number(strRaceID)
-
         const info = dicRace[RaceID]
+        predictrows[RaceID] = {
+            Round: info.Round,
+            Ground: `${info.Ground}`,
+            Venue: `${info.Venue}`,
+            Horse: []
+        }
         if (dicpredict[RaceID] == undefined) {
             dicpredict[RaceID] = {
                 info: `,${info.Venue},${info.Range},${info.Ground},${info.GroundCondition},${info.Weather},${info.Hold},${info.Day}`,
@@ -165,7 +171,9 @@ export async function GetPredictData(
             dicpredict[RaceID].Horses[no]={
                 horsepredictdata:',None,None,None,None,None',
                 rank:-1,
-                Name: ''
+                Name: '',
+                HorseID: -1,
+                cancel: false
             }
         }
         const Horse = dicHorse[RaceID]
@@ -191,10 +199,12 @@ export async function GetPredictData(
             dicpredict[RaceID].Horses[Horsevalue.HorseNo] = {
                 horsepredictdata: HorsePredictData,
                 rank: Horsevalue.Rank,
-                Name: Horsevalue.HorseName
+                Name: Horsevalue.HorseName,
+                HorseID: HorseID,
+                cancel: Horsevalue.cancel
             }
         }
-        predictrows[RaceID] = await GetPredictRows(RaceID, dicpredict)
+        predictrows[RaceID].Horse = await GetPredictRows(RaceID, dicpredict)
         predictprogress.del()
         Raceprogress.addCount(1)
     }
@@ -202,28 +212,39 @@ export async function GetPredictData(
     return predictrows
 }
 export async function GetPredictRows(RaceID: number, dicpredict: IFDicPredictData){
-    const predictrows: IFPredictRows = {}
+    const Horse: {
+        [HorseNo: number] : {
+            HorseName: string,
+            HorseID: number,
+            predict: string
+        }
+    } = {}
     for (const strHorseNo of Object.keys(dicpredict[RaceID].Horses)) {
         const HorseNo = Number(strHorseNo)
         const Horsevalue = dicpredict[RaceID].Horses[HorseNo]
-        if (Horsevalue.rank == 0) {
+        if (Horsevalue.rank == 0 && Horsevalue.cancel == false) {
             let row = `predict,${Horsevalue.rank}${dicpredict[RaceID].info}${Horsevalue.horsepredictdata}`
             for (const strEnemyNo of Object.keys(dicpredict[RaceID].Horses)) {
                 const EnemyNo = Number(strEnemyNo)
                 if (EnemyNo != HorseNo) {
                     const Enemyvalue = dicpredict[RaceID].Horses[EnemyNo]
-                    row += `${Enemyvalue.horsepredictdata}`
+                    if (Enemyvalue.cancel == false) {
+                        row += `${Enemyvalue.horsepredictdata}`
+                    } else {
+                        row += ',None,None,None,None,None'
+                    }
                 } else {
                     row += ',None,None,None,None,None'
                 }
             }
-            predictrows[RaceID].Horse[HorseNo] = {
+            Horse[HorseNo] = {
                 HorseName: Horsevalue.Name,
+                HorseID: Horsevalue.HorseID,
                 predict: row
             }
         }
     }
-    return predictrows[RaceID]
+    return Horse
 }
 
 export async function GetDicAptitudeData(

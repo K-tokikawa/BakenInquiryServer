@@ -8,7 +8,7 @@ import DeletePredictRecord from "../../sql/query/DeletePredictRecord";
 import GetRaceHorseStudyDataBeforeSpecifyID from "../../sql/query/GetRaceHorseStudyDataBeforeSpecifyID";
 import GetSpecifyDateRaceData from "../../sql/query/GetSpecifyDateRaceData";
 import simpleProgress from "../ProgressBar";
-import { GetDicHorseInfomation, GetDicRace, GetPredictData } from "./PredictUtil";
+import { GetDicHorseInfomation, GetDicRace, GetPredictData, Predict } from "./PredictUtil";
 
 export default async function PredictRegister(startData: Date | null, finishData: Date | null){
     const deletesql = new DeletePredictRecord()
@@ -47,4 +47,27 @@ export default async function PredictRegister(startData: Date | null, finishData
         shell,
         ProgressBar
         )
+
+    for (const strkey of Object.keys(predictrows)) {
+        const RaceID = Number(strkey)
+        const result: {
+            HorseID: number,
+            HorseNo: number
+            predict :number
+        }[] = []
+        const Horses = predictrows[RaceID].Horse
+        for (const strHorseNo of Object.keys(Horses)) {
+            const HorseNo = Number(strHorseNo)
+            const row = Horses[HorseNo].predict
+            let predict = await Predict(row, shell) as number
+            result.push({
+                HorseID: Horses[HorseNo].HorseID,
+                HorseNo: HorseNo,
+                predict: predict
+            })
+        }
+        result.sort((x, y) => {
+            return x.predict - y.predict
+        })
+    }
 }

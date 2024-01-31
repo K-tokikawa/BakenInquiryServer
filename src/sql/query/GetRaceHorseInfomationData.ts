@@ -25,6 +25,7 @@ select
     , TrainerID
     , Fluctuation
     , Popularity
+    , Remark
 from RaceHorseInfomation as RHI
     left outer join HorseMaster as HM
         on HM.ID = RHI.HorseID

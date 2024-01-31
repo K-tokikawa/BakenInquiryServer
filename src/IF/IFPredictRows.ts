@@ -6,6 +6,7 @@ export default interface IFPredictRows{
         Horse: {
             [HorseNo: number] : {
                 HorseName: string,
+                HorseID: number,
                 predict: string
             }
         }

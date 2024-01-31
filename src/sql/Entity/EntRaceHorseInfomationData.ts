@@ -12,7 +12,7 @@ export default class EntRaceHorseInfomationData{
     public TrainerID: number
     public Fluctuation: number
     public Popularity: number
-
+    public Remark: number
     constructor(){
         this.RaceID = 0
         this.HorseID = 0
@@ -27,5 +27,6 @@ export default class EntRaceHorseInfomationData{
         this.TrainerID = 0
         this.Fluctuation = 0
         this.Popularity = 0
+        this.Remark = 0
     }
 }

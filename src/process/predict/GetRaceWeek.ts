@@ -148,7 +148,7 @@ async function RegisterData(lstClassRace: ClassRace[])
                 RaceID,
                 racedata.RaceID,
                 null,
-                null,
+                horse.Cancel == true ? 1 : 0,
                 0,
                 horse.netkeibaID,
                 horse.GateNo,
