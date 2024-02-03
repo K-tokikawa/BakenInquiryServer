@@ -25,7 +25,7 @@ select
     , TrainerID
     , Fluctuation
     , Popularity
-    , Remark
+    , case when Remarks = null then 1 else 0 end as Remarks
 from RaceHorseInfomation as RHI
     left outer join HorseMaster as HM
         on HM.ID = RHI.HorseID

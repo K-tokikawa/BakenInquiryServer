@@ -82,8 +82,9 @@ export async function GetDicHorseInfomation(
             TrainerID: data.TrainerID,
             Fluctuation: data.Fluctuation,
             Popularity: data.Popularity,
-            cancel: data.Remark != 0
+            cancel: data.Remarks != 0
         }
+        console.log(data.Remarks)
     }
     const HorseIDs = Array.from(new Set(HorseIDsvalue.map(x => {return x.HorseID})))
     return [dicHorse, HorseIDs]
@@ -195,7 +196,6 @@ export async function GetPredictData(
                 dicRotation,
                 shell
                 )
-
             dicpredict[RaceID].Horses[Horsevalue.HorseNo] = {
                 horsepredictdata: HorsePredictData,
                 rank: Horsevalue.Rank,
@@ -204,6 +204,7 @@ export async function GetPredictData(
                 cancel: Horsevalue.cancel
             }
         }
+        console.log(dicpredict)
         predictrows[RaceID].Horse = await GetPredictRows(RaceID, dicpredict)
         predictprogress.del()
         Raceprogress.addCount(1)
