@@ -10,6 +10,7 @@ import GetSpecifyDateRaceData from "../../sql/query/GetSpecifyDateRaceData";
 import simpleProgress from "../ProgressBar";
 import { GetDicHorseInfomation, GetDicRace, GetPredictData, Predict } from "./PredictUtil";
 
+PredictRegister(new Date('2023-12-01'), new Date('2023-12-2'))
 export default async function PredictRegister(startData: Date | null, finishData: Date | null){
     const deletesql = new DeletePredictRecord()
     await deletesql.Execsql()
@@ -18,15 +19,16 @@ export default async function PredictRegister(startData: Date | null, finishData
     const param = new PrmGetSpecifyDateRaceData(startData, finishData)
     const sql = new GetSpecifyDateRaceData(param)
     const RaceData = await sql.Execsql()
-    const lstRaceID = RaceData.map(x => {return x.ID})
-    const [dicRace, RaceIDs] = await GetDicRace(lstRaceID, ProgressBar)
+    const lstRaceID = RaceData.map(x => x.ID)
+    const dicRace = await GetDicRace(lstRaceID, ProgressBar)
     const [dicHorse, HorseIDs] = await GetDicHorseInfomation(lstRaceID, dicRace, ProgressBar)
-    
     let mgr = new MgrRaceData([], lstRaceID)
-    for (const strRaceID in Object.keys(dicHorse)) {
-
-        const RaceID = Number(strRaceID)
-        const HorseIDs = Object.keys(dicHorse[RaceID]).map(x => {return Number(x)})
+    for (const num in lstRaceID) {
+        const RaceID = lstRaceID[num]
+        if (dicHorse[RaceID] == undefined) {
+            continue
+        }
+        const HorseIDs = Object.keys(dicHorse[RaceID]).map(x => Number(x))
         const studyparam = new PrmStudyData(HorseIDs, RaceID)
         const studydatasql = new GetRaceHorseStudyDataBeforeSpecifyID(studyparam)
         const studydata = await studydatasql.Execsql() as EntRaceHorseStudyData[]
@@ -38,16 +40,18 @@ export default async function PredictRegister(startData: Date | null, finishData
             mgr = new MgrRaceData([], lstRaceID)
         }
     }
+    await mgr.dicCreate()
+    await mgr.Register()
+
     const shell = new PythonShell('./src/python/whilepredict.py')
     const predictrows: IFPredictRows = await GetPredictData(
         HorseIDs,
-        RaceIDs,
+        lstRaceID,
         dicRace,
         dicHorse,
         shell,
         ProgressBar
         )
-
     for (const strkey of Object.keys(predictrows)) {
         const RaceID = Number(strkey)
         const result: {

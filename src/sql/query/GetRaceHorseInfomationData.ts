@@ -15,7 +15,7 @@ select
       RaceID
     , HorseID
     , HM.Name
-    , Rank
+    , isnull(Rank, 0) as Rank
     , HorseNo
     , JM.ID as JockeyID
     , HorseAge

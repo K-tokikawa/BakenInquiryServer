@@ -13,12 +13,12 @@ export default async function CreateRacePredictData(RaceData: {
     // // /**DBに登録した予測用のデータで予測を行う */
     const ProgressBar = simpleProgress()
 
-    const [dicRace, RaceIDs] = await GetDicRace(RaceData.predictRaceID, ProgressBar)
-    const [dicHorse, HorseIDs] = await GetDicHorseInfomation(RaceIDs, dicRace, ProgressBar)
+    const dicRace = await GetDicRace(RaceData.predictRaceID, ProgressBar)
+    const [dicHorse, HorseIDs] = await GetDicHorseInfomation(RaceData.predictRaceID, dicRace, ProgressBar)
 
     const predictrows: IFPredictRows = await GetPredictData(
         HorseIDs,
-        RaceIDs,
+        RaceData.predictRaceID,
         dicRace,
         dicHorse,
         shell,

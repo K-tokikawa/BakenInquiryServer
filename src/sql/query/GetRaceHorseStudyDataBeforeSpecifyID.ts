@@ -100,10 +100,10 @@ from (
     where
             RHI.HorseID is not null
         and RI.Direction is not null
+        and RHI.RaceID <= ${this.parameter?.param1}
 ) as RHI
 where
     RHI.HorseID in (${this.parameter?.IDs})
-    and RHI.RaceID < ${this.parameter?.param1}
 order by
     RHI.HorseID
 `

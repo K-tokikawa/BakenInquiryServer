@@ -1,6 +1,6 @@
 export default class EntRaceHorseStudyData{
-    public RaceID: number
     public HorseID: number
+    public RaceID: number
     public GoalTime: number
     public Direction: number
     public HoldDay: Date
@@ -36,8 +36,8 @@ export default class EntRaceHorseStudyData{
     public before: Date
     public num: number
     constructor(){
-        this.HorseID = 0
         this.RaceID = 0
+        this.HorseID = 0
         this.GoalTime = 0
         this.Direction = 0
         this.HoldDay = new Date()

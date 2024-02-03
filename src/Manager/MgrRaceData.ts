@@ -8,6 +8,7 @@ import PrmStudyData from "../sql/param/PrmStudyData"
 import GetRaceHorseStudyData from "../sql/query/GetRaceHorseStudyData"
 import DeletePredictRecord from "../sql/query/DeletePredictRecord"
 import BulkInsert from "../sql/query/BulkInsert"
+import FileUtil from "../FileUtil"
 
 export default class MgrRaceData{
     private m_RaceData: EntRaceHorseStudyData[]
@@ -34,7 +35,8 @@ export default class MgrRaceData{
     public get insertDic() { return this.m_insertDic }
 
     async addStudyData(RaceData: EntRaceHorseStudyData[]){
-        this.m_RaceData = this.m_RaceData.concat(RaceData)
+        const newdata = this.m_RaceData.concat(RaceData)
+        this.m_RaceData = newdata
     }
 
     async dicCreate(){
@@ -113,7 +115,8 @@ export default class MgrRaceData{
         return new Promise(async (resolve) =>{
             const dic = this.m_dic
             const horseData = dic[HorseID].data
-            const entitys: {[num: number]: {PassageData: ClassPassageData, AchievementData: ClassAchievementData, RotationData: ClassRaceHorseData[], RaceID: number, Rank: number}} = horseData.HorseData
+            const entitys: {[num: number]: {PassageData: ClassPassageData, AchievementData: ClassAchievementData, RotationData: ClassRaceHorseData[], RaceID: number, Rank: number}}
+                = horseData.HorseData
             for (const keynum of Object.keys(entitys)){
                 const num = Number(keynum)
                 const Passageentity = entitys[num].PassageData

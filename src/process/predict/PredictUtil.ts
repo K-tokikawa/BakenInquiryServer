@@ -26,12 +26,11 @@ import { multiProgress } from "../ProgressBar"
 export async function GetDicRace(
     predictRaceID: number[],
     ProgressBar: (maxCount: number, progressLength: number, title: string) => (addCount: number) => boolean
-): Promise<[IFDicRace, number[]]>{
+): Promise<IFDicRace>{
     const predictparam = new PrmStudyData(predictRaceID)
     const sql = new GetRaceInfomationData(predictparam)
     const value = await sql.Execsql() as EntRaceInfomationData[]
     const dicRace:IFDicRace = {}
-
 
     const initprogress = ProgressBar(Object.keys(dicRace).length, 20, 'init')
     value.map(x => {
@@ -51,8 +50,7 @@ export async function GetDicRace(
             Round: x.Round
         }
     })
-    const RaceIDs = value.map(x => {return x.ID})
-    return [dicRace, RaceIDs]
+    return dicRace
 }
 
 export async function GetDicHorseInfomation(
@@ -72,7 +70,7 @@ export async function GetDicHorseInfomation(
         }
         dicHorse[data.RaceID][data.HorseID] = {
             Jockey: data.JockeyID,
-            Rank : 0,
+            Rank : data.Rank,
             HorseName: data.Name,
             HorseNo : data.HorseNo,
             HorseAge: data.HorseAge,
@@ -84,7 +82,6 @@ export async function GetDicHorseInfomation(
             Popularity: data.Popularity,
             cancel: data.Remarks != 0
         }
-        console.log(data.Remarks)
     }
     const HorseIDs = Array.from(new Set(HorseIDsvalue.map(x => {return x.HorseID})))
     return [dicHorse, HorseIDs]
@@ -112,7 +109,6 @@ export async function GetHorsePredictData(
     dicRotation: IFDicRotation,
     shell: PythonShell
     ){
-
     const JockeyData = `Jockey,0,${Horsevalue.Jockey},${Horsevalue.HorseGender},${info.Venue},${info.Range},${info.Ground},${info.GroundCondition},${Horsevalue.HorseNo},${Horsevalue.HorseAge},${info.HoldMonth},${info.Weather},${Horsevalue.Weight},${info.Hold},${info.Day},${info.Round}`
     const blood = blooddata[HorseID]
     const BloodData = `blood,0,${info.Range},${info.Venue},${info.Ground},${info.GroundCondition},${Horsevalue.HorseGender},${Horsevalue.Weight},${Horsevalue.HorseAge},${blood}`
@@ -143,11 +139,9 @@ export async function GetPredictData(
     ){
     const dicpredict: IFDicPredictData = {}
     const blooddata: {[ID: number]: string} = await GetBloodPredictData(HorseIDs)
-
     const dicAptitude: IFAptitude = await GetDicAptitudeData(RaceIDs, dicRace, ProgressBar)
     const dicAchievement: IFDicAchievement = await GetDicAchievementData(RaceIDs, dicRace, ProgressBar)
     const dicRotation: IFDicRotation = await GetDicRotationData(RaceIDs, dicRace, ProgressBar)
-
     const multiProgressber = multiProgress()
     const Raceprogress = multiProgressber().addProgress(Object.keys(dicRace).length, 20, 'Race')
 
@@ -159,7 +153,7 @@ export async function GetPredictData(
         predictrows[RaceID] = {
             Round: info.Round,
             Ground: `${info.Ground}`,
-            Venue: `${info.Venue}`,
+            Venue: `${info.VenueName}`,
             Horse: []
         }
         if (dicpredict[RaceID] == undefined) {
@@ -204,7 +198,6 @@ export async function GetPredictData(
                 cancel: Horsevalue.cancel
             }
         }
-        console.log(dicpredict)
         predictrows[RaceID].Horse = await GetPredictRows(RaceID, dicpredict)
         predictprogress.del()
         Raceprogress.addCount(1)
@@ -256,6 +249,7 @@ export async function GetDicAptitudeData(
     const param = new PrmStudyData(RaceIDs)
     const Aptitudesql = new GetAptitudeData(param)
     const Aptitude = await Aptitudesql.Execsql() as EntAptitudeData[]
+    console.log(Aptitude)
     const dicAptitude: {
         [RaceIDs: number]: {
             [HorseID: number] : {
