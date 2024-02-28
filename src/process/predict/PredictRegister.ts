@@ -9,6 +9,8 @@ import GetRaceHorseStudyDataBeforeSpecifyID from "../../sql/query/GetRaceHorseSt
 import GetSpecifyDateRaceData from "../../sql/query/GetSpecifyDateRaceData";
 import simpleProgress from "../ProgressBar";
 import { GetDicHorseInfomation, GetDicRace, GetPredictData, Predict } from "./PredictUtil";
+import PrmPredictRegister from "../../sql/param/PrmPredictRegister";
+import RegisterPredict from "../../sql/query/RegisterPredict";
 
 PredictRegister(new Date('2023-12-01'), new Date('2023-12-2'))
 export default async function PredictRegister(startData: Date | null, finishData: Date | null){
@@ -54,7 +56,7 @@ export default async function PredictRegister(startData: Date | null, finishData
         )
     for (const strkey of Object.keys(predictrows)) {
         const RaceID = Number(strkey)
-        const result: {
+        const results: {
             HorseID: number,
             HorseNo: number
             predict :number
@@ -64,14 +66,32 @@ export default async function PredictRegister(startData: Date | null, finishData
             const HorseNo = Number(strHorseNo)
             const row = Horses[HorseNo].predict
             let predict = await Predict(row, shell) as number
-            result.push({
+            results.push({
                 HorseID: Horses[HorseNo].HorseID,
                 HorseNo: HorseNo,
                 predict: predict
             })
         }
-        result.sort((x, y) => {
+        results.sort((x, y) => {
             return x.predict - y.predict
         })
+        let rank = 0
+        const prm: PrmPredictRegister[] = []
+        for (const result of results) {
+            const HorseNo = result.HorseNo
+            if (Horses[HorseNo] == undefined) {
+                continue
+            }
+            rank++
+            prm.push(
+                new PrmPredictRegister(
+                    RaceID,
+                    HorseNo,
+                    rank
+                )
+            )
+        }
+        const sql = new RegisterPredict(prm)
+        sql.BulkInsert('predict')
     }
 }

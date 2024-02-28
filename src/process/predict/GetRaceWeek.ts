@@ -6,10 +6,10 @@ import GetVenueMaxDay from '../../sql/query/GetVenueMaxDay'
 import ClassHorse from '../../class/ClassHorse'
 import PrmRaceInfo from '../../sql/param/PrmRaceInfo'
 import PrmRegisterRaceHorseInfo from '../../sql/param/PrmRegisterRaceHorseInfo'
-import SQLRegisterRaceHorseInfo from '../../sql/query/SQLRegisterRaceHorseInfo'
-import SQLRegisterRaceInfo from '../../sql/query/SQLRegisterRaceInfo'
+import RegisterRaceHorseInfo from '../../sql/query/RegisterRaceHorseInfo'
+import RegisterRaceInfo from '../../sql/query/RegisterRaceInfo'
 import PrmGetSYSTEMCurrentID from '../../sql/param/PrmGetSYSTEMCurrentID'
-import GetSYSTEMCurrentID from '../../sql/query/SQLGetSYSTEMCurrentID'
+import GetSYSTEMCurrentID from '../../sql/query/GetSYSTEMCurrentID'
 import EntSYSTEMCurrentID from '../../sql/Entity/EntSYSTEMCurrentID'
 import asEnumrable from 'linq-es5'
 import CreateRacePredictData from './Predict'
@@ -64,6 +64,7 @@ async function GetAnalysisData(Year: number, Month: number, HoldDay: number, Ven
         if (Number.isNaN(Hold)) {
             Hold = 1
         }
+
         let strHold = Hold < 10 ? `0${Hold}` : `${Hold}`
 
         const sqlDay = new GetVenueMaxDay(Year, VenueNum, Hold)
@@ -174,9 +175,9 @@ async function RegisterData(lstClassRace: ClassRace[])
         }
     }
     if (raceparam.length > 0) {
-        const horsesql = new SQLRegisterRaceHorseInfo(horseparam)
+        const horsesql = new RegisterRaceHorseInfo(horseparam)
         await horsesql.BulkInsert('Horse')
-        const racesql = new SQLRegisterRaceInfo(raceparam)
+        const racesql = new RegisterRaceInfo(raceparam)
         await racesql.BulkInsert('Race')
         const horseupdate = new PrmStudyData([], RaceHorseID, 3)
         const horseupdatesql = new UpdateSystemID(horseupdate)
@@ -480,11 +481,11 @@ async function GetNodeTree(
         })
         let rank = 0
         for (const val of result) {
-            if (datas[val.HorseNo - 1] == undefined) {
+            if (Horses[val.HorseNo - 1] == undefined) {
                 continue
             }
-            let Mark = ''
             rank++
+            let Mark = ''
             if (rank == 1) {
                 Mark = '◎'
                 txt += `${Mark} ${val.HorseNo} ${datas[val.HorseNo - 1].data.Name}\n`

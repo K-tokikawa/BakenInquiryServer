@@ -14,6 +14,6 @@ export default class BulkInsert extends SQLBase<number>
     }
 
     public async BulkInsert(filename: string) {
-        return await this.ExecBulkInsert(this.dbName, this.parameter, `\\\\192.168.102.163\\Itemp\\${filename}.csv`)
+        return await this.ExecBulkInsert(this.dbName, this.parameter, `D:\\data\\${filename}.csv`)
     }
 }

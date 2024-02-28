@@ -249,7 +249,6 @@ export async function GetDicAptitudeData(
     const param = new PrmStudyData(RaceIDs)
     const Aptitudesql = new GetAptitudeData(param)
     const Aptitude = await Aptitudesql.Execsql() as EntAptitudeData[]
-    console.log(Aptitude)
     const dicAptitude: {
         [RaceIDs: number]: {
             [HorseID: number] : {
