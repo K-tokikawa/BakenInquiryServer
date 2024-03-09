@@ -1,3 +1,8 @@
 node_modules
 *.txt
 model
+build
+.env
+*.csv
+*.bat
+*.zip

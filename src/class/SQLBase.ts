@@ -54,11 +54,11 @@ WITH (
                 let success = true
                 while (success) {
                     try {
-                        // FileUtil.DeleteFile(filepath)
+                        FileUtil.DeleteFile(filepath)
                         success = false
                     }
                     catch (error) {
-
+                        console.log(error)
                     }
                 }
             })
@@ -74,8 +74,8 @@ async function executeStatement(connection: Connection, sql: string) {
         // console.log('request')
         const request = new Request(sql, function (err: any) {
             if (err) {
-                console.log(sql);
-                console.log(err);
+                // console.log(sql);
+                // console.log(err);
             }
             connection.close();
         });

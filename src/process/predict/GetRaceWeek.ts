@@ -29,12 +29,12 @@ import { Predict } from './PredictUtil'
 import DeletePredictRecord from '../../sql/query/DeletePredictRecord'
 import IFPredictRows from '../../IF/IFPredictRows'
 
-export default async function process(Year: number, Month: number, HoldDay: number, Venue: number[], Round: number[]) {
+export default async function process(Year: number, Month: number, HoldDay: number, Venue: number[], Round: number[], hashoff = false) {
     const shell = new PythonShell('./src/python/whilepredict.py')
     const AnalysisData = await GetAnalysisData(Year, Month, HoldDay, Venue, Round)
     const predictRacedata = await RegisterData(AnalysisData)
     const predictdata = await CreateRacePredictData(predictRacedata, shell)
-    const res = await GetNodeTree(predictdata, predictRacedata.cancelHorseNo, shell)
+    const res = await GetNodeTree(predictdata, predictRacedata.cancelHorseNo, hashoff, shell)
     return res
 
 }
@@ -435,6 +435,7 @@ async function CheckHold(Year: number, VenueNum: number, strHold: string, strDay
 async function GetNodeTree(
     predictdata: IFPredictRows,
     cancelHorseNo: {[RaceID: number]: number[]},
+    hashoff: boolean,
     shell: PythonShell
     ) {
     let tree: IFPredictParentTreeNode[] = []
@@ -481,7 +482,7 @@ async function GetNodeTree(
         })
         let rank = 0
         for (const val of result) {
-            if (Horses[val.HorseNo - 1] == undefined) {
+            if (Horses[val.HorseNo] == undefined) {
                 continue
             }
             rank++
@@ -512,11 +513,13 @@ async function GetNodeTree(
             datas[val.HorseNo - 1].data.Mark = Mark
         }
         txt += `\n`
-        txt += `#${predictdata[RaceID].Venue}${predictdata[RaceID].Round}R\n`
-        txt += `#中央競馬\n`
-        txt += `#競馬予想\n`
-        txt += `#競馬AI\n`
-        txt += `#AI予測`
+        if (hashoff == false) {
+            txt += `#${predictdata[RaceID].Venue}${predictdata[RaceID].Round}R\n`
+            txt += `#中央競馬\n`
+            txt += `#競馬予想\n`
+            txt += `#競馬AI\n`
+            txt += `#AI予測`
+        }
         tree.push({
             key: key,
             data: {

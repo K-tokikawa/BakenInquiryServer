@@ -7,6 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -b tsconfig.backend.json",
     "start": "ts-node",
+    "compile": "tsc -p .",
+    "botstart": "node build/src/Botclient.js",
     "tsc": "tsc"
   },
   "author": "",
@@ -14,11 +16,14 @@
   "dependencies": {
     "@types/encoding-japanese": "^2.0.1",
     "@types/node": "^20.2.3",
+    "@types/node-cron": "^3.0.11",
     "@types/webpack-env": "^1.16.3",
+    "@types/yargs": "^17.0.32",
     "axios": "^1.4.0",
     "bignumber.js": "^9.0.2",
     "compression": "^1.7.4",
     "core-js": "^3.6.5",
+    "discord.js": "^14.14.1",
     "dotenv": "^11.0.0",
     "encoding-japanese": "^2.0.0",
     "errorhandler": "^1.5.1",
@@ -28,10 +33,12 @@
     "linq": "^4.0.0",
     "linq-es5": "^1.11.15",
     "lusca": "^1.7.0",
+    "node-cron": "^3.0.3",
     "python-shell": "^5.0.0",
     "tedious": "^15.1.0",
-    "ts-node": "^10.9.1",
-    "tsc": "^2.0.4"
+    "ts-node": "^10.9.2",
+    "tsc": "^2.0.4",
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
     "@types/compression": "^1.7.2",
