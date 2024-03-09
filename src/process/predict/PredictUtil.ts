@@ -55,14 +55,13 @@ export async function GetDicRace(
 
 export async function GetDicHorseInfomation(
     RaceIDs : number[],
-    dicRace:IFDicRace,
     ProgressBar: (maxCount: number, progressLength: number, title: string) => (addCount: number) => boolean
 ): Promise<[IFDicHorseInfomation, number[]]>{
     const param = new PrmStudyData(RaceIDs)
     const HorseIDssql = new GetRaceHorseInfomationData(param)
     const HorseIDsvalue = await HorseIDssql.Execsql() as EntRaceHorseInfomationData[]
     const dicHorse: IFDicHorseInfomation = {}
-    const horseprogress = ProgressBar(Object.keys(dicRace).length, 20, 'horse')
+    const horseprogress = ProgressBar(Object.keys(RaceIDs).length, 20, 'horse')
     for (const data of HorseIDsvalue) {
         horseprogress(1)
         if (dicHorse[data.RaceID] == undefined) {
@@ -178,7 +177,6 @@ export async function GetPredictData(
             predictprogress.addCount(1)
             const HorseID = Number(strHorseID)
             const Horsevalue = Horse[HorseID]
-
             const HorsePredictData = await GetHorsePredictData(
                 RaceID,
                 HorseID,
@@ -216,7 +214,7 @@ export async function GetPredictRows(RaceID: number, dicpredict: IFDicPredictDat
     for (const strHorseNo of Object.keys(dicpredict[RaceID].Horses)) {
         const HorseNo = Number(strHorseNo)
         const Horsevalue = dicpredict[RaceID].Horses[HorseNo]
-        if (Horsevalue.rank == 0 && Horsevalue.cancel == false) {
+        if (Horsevalue.cancel == false) {
             let row = `predict,${Horsevalue.rank}${dicpredict[RaceID].info}${Horsevalue.horsepredictdata}`
             for (const strEnemyNo of Object.keys(dicpredict[RaceID].Horses)) {
                 const EnemyNo = Number(strEnemyNo)

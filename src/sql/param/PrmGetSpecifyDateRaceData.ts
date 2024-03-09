@@ -6,6 +6,6 @@ export default class PrmGetSpecifyDateRaceData {
         this.m_finishDate = finishDate
     }
 
-    public get startDate() { return this.m_startDate}
-    public get finishDate() { return this.m_finishDate}
+    public get startDate() { return this.m_startDate }
+    public get finishDate() { return this.m_finishDate }
 }

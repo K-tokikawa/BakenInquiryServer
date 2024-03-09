@@ -14,7 +14,7 @@ export default async function CreateRacePredictData(RaceData: {
     const ProgressBar = simpleProgress()
 
     const dicRace = await GetDicRace(RaceData.predictRaceID, ProgressBar)
-    const [dicHorse, HorseIDs] = await GetDicHorseInfomation(RaceData.predictRaceID, dicRace, ProgressBar)
+    const [dicHorse, HorseIDs] = await GetDicHorseInfomation(RaceData.predictRaceID, ProgressBar)
 
     const predictrows: IFPredictRows = await GetPredictData(
         HorseIDs,

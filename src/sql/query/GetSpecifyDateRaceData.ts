@@ -44,9 +44,11 @@ from RaceInfomation as RI
 where
     1 = 1
     and Direction is not null
+    and not exists (select distinct(RaceID) as RaceID from Predict as Pr where Pr.RaceID = RI.ID)
     ${this.parameter.startDate != null ? ` and (Year >= ${this.parameter.startDate.getFullYear()} and HoldMonth >= ${this.parameter.startDate.getMonth() + 1} and HoldDay >= ${this.parameter.startDate.getDate()})` : `` }
     ${this.parameter.finishDate != null ? ` and (Year <= ${this.parameter.finishDate.getFullYear()} and HoldMonth <= ${this.parameter.finishDate.getMonth() + 1} and HoldDay <= ${this.parameter.finishDate.getDate()})` : `` }
-
+order by
+    ID
 `
         return await this.ExecGet(sql)
     }

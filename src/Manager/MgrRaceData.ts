@@ -47,9 +47,6 @@ export default class MgrRaceData{
             const progress = ProgressBar(this.m_RaceData.length, 20, 'Blood_Jockey')
             for(const row of this.m_RaceData) {
                 progress(1)
-                // if (row.Remarks != 0) {
-                //     continue;
-                // }
                 const data = new ClassRaceHorseData(
                     row,
                     0

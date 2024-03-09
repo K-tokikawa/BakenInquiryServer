@@ -11,7 +11,7 @@ export default class RegisterPredict extends SQLBase<number>
 
     public async Execsql(): Promise<number> {
         const sql = `
-            INSERT INTO RaceHorseInfomation VALUES (
+            INSERT INTO Predict VALUES (
                 ${this.parameter[0].RaceID}
                 ${this.parameter[0].HorseNo}
                 ${this.parameter[0].Rank}
@@ -26,13 +26,14 @@ export default class RegisterPredict extends SQLBase<number>
         const lines: string[] = []
         this.parameter.forEach(row => {
             const RaceID         = row.RaceID
-            const Rank           = row.Rank    != null ? row.Rank    : 'null'
             const HorseNo        = row.HorseNo
+            const Predict        = row.Predict
+            const Rank           = row.Rank    != null ? row.Rank    : 'null'
             const line = 
-                `${RaceID},${HorseNo},${Rank}`
+                `${RaceID},${HorseNo},${Predict},${Rank}`
             // line.replace(/null/, '')
             lines.push(line)
         })
-        await this.ExecBulkInsert('RacePredict', lines, `D:\\data\\${filename}.csv`)
+        await this.ExecBulkInsert('Predict', lines, `D:\\data\\${filename}.csv`)
     }
 }

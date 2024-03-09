@@ -70,7 +70,6 @@ from RaceInfomation as RI
 where
     RI.ID in (${this.parameter?.IDs})
     and RI.Direction is not null
-	and BT.hc = RHI.hc
 `
         return await this.ExecGet(sql)
     }
