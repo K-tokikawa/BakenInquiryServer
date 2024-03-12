@@ -8,7 +8,8 @@ import DeletePredictRecord from "../../sql/query/DeletePredictRecord";
 import GetRaceHorseStudyDataBeforeSpecifyID from "../../sql/query/GetRaceHorseStudyDataBeforeSpecifyID";
 import GetSpecifyDateRaceData from "../../sql/query/GetSpecifyDateRaceData";
 import simpleProgress from "../ProgressBar";
-import { GetDicHorseInfomation, GetDicRace, GetPredictData, Predict } from "./PredictUtil";
+import { Predict } from "./PredictUtil";
+import {GetDicHorseInfomation, GetDicRace, GetPredictData } from "./Predict"
 import PrmPredictRegister from "../../sql/param/PrmPredictRegister";
 import RegisterPredict from "../../sql/query/RegisterPredict";
 

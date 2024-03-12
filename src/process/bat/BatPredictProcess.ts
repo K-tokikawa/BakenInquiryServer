@@ -1,7 +1,7 @@
 import { exit } from "process";
-import predictprocess from "../predict/GetRaceWeek";
-import * as dotenv from "dotenv";
-import { BaseGuildTextChannel, Client, Events, TextChannel } from "discord.js";
+import predictprocess from "../predict/GetRacePredict";
+import dotenv from "dotenv";
+import { Client, TextChannel } from "discord.js";
 import Discord from "discord.js";
 
 dotenv.config()
@@ -12,9 +12,11 @@ const client = new Client({
 client.once('ready', async ()=> {
     console.log('Ready!')
     console.log(client.user?.tag)
-    const channel = await client.channels.fetch('1213421544827527198') as TextChannel
+    const channel_rate = await client.channels.fetch('1213421544827527198') as TextChannel
+    const channel = await client.channels.fetch('1216572418060193873') as TextChannel
     try {
       const text = await BatProcess()
+      await channel_rate.send(text)
       await channel.send(text)
     } catch(e) {
       const date = new Date()
@@ -31,7 +33,6 @@ async function BatProcess(){
     const Month: number = date.getMonth() + 1
     const HoldDay: number = date.getDate()
     const Venue:number[] = [6, 7, 9]
-    console.log(date.getHours(), date.getMinutes())
     const Round: number[] = [CheckRound(date.getHours(), date.getMinutes())]
     const results = await predictprocess(Year, Month, HoldDay, Venue, Round, true)
     let resulttext = ''

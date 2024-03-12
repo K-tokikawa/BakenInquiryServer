@@ -1,6 +1,5 @@
 import express from "express"
-import process from "../process/predict/GetRaceWeek";
-import { PythonShell } from "python-shell";
+import process from "../process/predict/GetRacePredict";
 const router: express.Router = express.Router();
 // curl http://localhost:9999/GetJRAtohyoData -H "Content-Type:application/json" -d "{\"UID\":\"12345678\",\"PWD\":\"****\",\"PARS\":\"20XX\"}"
 router.post('/GetRacePredict', function (req, res, next) {
