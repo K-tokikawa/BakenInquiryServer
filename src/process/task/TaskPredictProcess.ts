@@ -19,8 +19,6 @@ client.once('ready', async ()=> {
       await channel_rate.send(text)
       await channel.send(text)
     } catch(e) {
-      const date = new Date()
-      await channel.send(`${date.getHours()}, ${date.getMinutes()}`)
     }
     exit()
 });
