@@ -30,7 +30,7 @@ async function BatProcess(){
     const Year: number = date.getFullYear()
     const Month: number = date.getMonth() + 1
     const HoldDay: number = date.getDate()
-    const Venue:number[] = [6, 7, 9]
+    const Venue:number[] = [6, 9]
     const Round: number[] = [CheckRound(date.getHours(), date.getMinutes())]
     const results = await predictprocess(Year, Month, HoldDay, Venue, Round, true)
     let resulttext = ''

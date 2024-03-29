@@ -1,6 +1,5 @@
 import xgboost as xgb
 import pandas as pd
-from sklearn.metrics import mean_squared_error
 import numpy as np
 
 
@@ -31,6 +30,7 @@ while(True):
     data = data.split(',')
     mode = data[0]
     datas = []
+    datas.append(None) 
     for d in data:
         if (d == 'None' or d == 'null'):
             datas.append(None)

@@ -34,7 +34,7 @@ select
     , Age
     , Popularity
     , HorseGender
-    , isnull(isnull(HorseWeight, lead(HorseWeight)over(partition by RHI.HorseID order by RHI.num)), 0) as HorseWeight
+    , isnull(HorseWeight, lead(HorseWeight)over(partition by RHI.HorseID order by RHI.num)) as HorseWeight
     , HorseNo
     , HorseAge
     , isnull(Passage1, 0) as Passage1
@@ -45,9 +45,11 @@ select
     , isnull(Fluctuation, 0) as Fluctuation
     , RaceRemarks
     , Remarks
-    , isnull(JockeyID, 0) as JockeyID
+    , JockeyID
     , lag(RHI.HoldDay)over(partition by RHI.HorseID order by RHI.num) as before
+    , DateDIFF(day, lag(RHI.HoldDay)over(partition by RHI.HorseID order by RHI.num), RHI.HoldDay) as interval
     , num
+    , RHI.OutValue
 from (
     select
           RHI.GoalTime - TA.Average as GoalTime
@@ -66,13 +68,13 @@ from (
         , RI.Ground
         , RI.GroundCondition
         , RI.Round
-        , isnull(RT.pace,0) as pace
+        , RT.pace
         , RHI.Weight
         , convert(int, RHI.TrainerID) as TrainerID
         , RHI.HorseAge as Age
         , RHI.Popularity
         , RHI.HorseGender
-        , isnull(HorseWeight, lead(HorseWeight)over(partition by RHI.HorseID order by convert(datetime, convert(nvarchar, RI.Year) + '-' + convert(nvarchar, RI.HoldMonth) + '-' + convert(nvarchar, RI.HoldDay)) desc)) as HorseWeight
+        , isnull(isnull(isnull(HorseWeight, lead(HorseWeight)over(partition by RHI.HorseID order by convert(datetime, convert(nvarchar, RI.Year) + '-' + convert(nvarchar, RI.HoldMonth) + '-' + convert(nvarchar, RI.HoldDay)) desc)), weightave.weightave), 0) as HorseWeight
         , RHI.HorseNo
         , case when RI.Year > 2000 then RHI.HorseAge else RHI.HorseAge - 1 end as HorseAge
         , RHI.Passage1
@@ -97,6 +99,17 @@ from (
             on RT.ID = RI.ID
         inner join TimeAverage as TA
             on TA.ID = RHI.Average
+            left outer join (
+                select
+                    RHI.HorseID
+                    , sum(HorseWeight) / count(RHI.HorseID) as weightave
+                from RaceHorseInfomation as RHI
+                where
+                    RHI.HorseID is not null
+                group by
+                    RHI.HorseID
+            ) as weightave
+                on RHI.HorseID = weightave.HorseID
     where
             RHI.HorseID is not null
         and RI.Direction is not null

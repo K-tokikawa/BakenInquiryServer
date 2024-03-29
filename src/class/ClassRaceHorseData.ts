@@ -1,5 +1,6 @@
 import EntRaceHorseStudyData from "../sql/Entity/EntRaceHorseStudyData"
 
+
 export default class ClassRaceHorseData{
     private m_RaceID: number
     private m_GoalTime: number
@@ -14,7 +15,6 @@ export default class ClassRaceHorseData{
     private m_Range: number
     private m_Ground: number | null
     private m_GroundCondition: number
-    private m_pace: number
     private m_Weight: number
     private m_TrainerID: number
     private m_HorseGender: number
@@ -31,6 +31,7 @@ export default class ClassRaceHorseData{
     private m_Remarks: number
     private m_JockeyID: number
     private m_before: number
+    private m_interval: number
     private m_HoldDay: Date
     constructor(row: EntRaceHorseStudyData, before: number){
         this.m_RaceID = row.RaceID
@@ -46,7 +47,6 @@ export default class ClassRaceHorseData{
         this.m_Range = row.Range
         this.m_Ground = row.Ground
         this.m_GroundCondition = row.GroundCondition
-        this.m_pace = row.pace
         this.m_Weight = row.Weight
         this.m_TrainerID = row.TrainerID
         this.m_HorseGender = row.HorseGender
@@ -63,6 +63,7 @@ export default class ClassRaceHorseData{
         this.m_RaceRemarks = row.RaceRemarks
         this.m_Remarks = row.Remarks
         this.m_before = before
+        this.m_interval = row.interval
         this.m_HoldDay = row.HoldDay
     }
     public get RaceID() { return this.m_RaceID}
@@ -78,7 +79,6 @@ export default class ClassRaceHorseData{
     public get Range() { return this.m_Range }
     public get Ground() { return this.m_Ground }
     public get GroundCondition() { return this.m_GroundCondition }
-    public get Pace() { return this.m_pace}
     public get Weight() { return this.m_Weight}
     public get TrainerID() { return this.m_TrainerID }
     public get HorseGender() { return this.m_HorseGender }
@@ -95,5 +95,6 @@ export default class ClassRaceHorseData{
     public get Remarks() {return this.m_Remarks}
     public get JockeyID() { return this.m_JockeyID }
     public get before() { return this.m_before }
+    public get interval() { return this.m_interval}
     public get HoldDay() { return this.m_HoldDay}
 }

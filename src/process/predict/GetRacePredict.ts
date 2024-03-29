@@ -33,9 +33,13 @@ import RegisterPredict from '../../sql/query/RegisterPredict'
 
 export default async function process(Year: number, Month: number, HoldDay: number, Venue: number[], Round: number[], hashoff = false) {
     const shell = new PythonShell('./src/python/whilepredict.py')
+    const shell_1 = new PythonShell('./src/python/whilepredict.py')
+    const shell_2 = new PythonShell('./src/python/whilepredict.py')
+    const shell_3 = new PythonShell('./src/python/whilepredict.py')
+    const shell_4 = new PythonShell('./src/python/whilepredict.py')
     const AnalysisData = await GetAnalysisData(Year, Month, HoldDay, Venue, Round)
     const predictRacedata = await RegisterData(AnalysisData)
-    const predictdata = await CreateRacePredictData(predictRacedata, shell)
+    const predictdata = await CreateRacePredictData(predictRacedata, [shell, shell_1, shell_2, shell_3, shell_4])
     const res = await GetNodeTree(predictdata, predictRacedata.cancelHorseNo, hashoff, shell)
     return res
 }
