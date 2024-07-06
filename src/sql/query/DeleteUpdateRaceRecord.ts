@@ -10,7 +10,7 @@ export default class DeleteRaceRecord extends SQLBase<void>
     }
     public async Execsql(): Promise<void> {
         const sql = `
-delete RaceInfomation where ID in (${this.parameter?.IDs})
+delete RaceInfomation where ID in (${this.parameter?.IDs});
 update SYSTEMCurrentID set CurrentID =  RI.ID
 from (
 select

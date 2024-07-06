@@ -30,7 +30,9 @@ export default class FileUtil {
     }
 
     public static DeleteFile(filePath: string) {
-        fs.unlinkSync(filePath)
+        if (fs.existsSync(filePath)){
+            fs.unlinkSync(filePath)
+        }
     }
     public static ReadFileSync(filePath: string): string[] {
         const response = fs.readFileSync(filePath)

@@ -123,7 +123,7 @@ export default class MgrRaceData{
                         data += `${HorseID},${RaceID}`
                     } else {
                         data += `,${value.GoalTime}`.replace('null', '')
-                        data += `,${value.Venue},${value.HoldMonth},${value.Hold},${value.Day},${value.Range},${value.Ground},${value.GroundCondition},${value.Weather},${value.Weight},${value.TrainerID},${value.HorseGender},${value.HorseWeight},${value.HorseNo},${value.HorseAge},${value.Remarks},${value.RaceRemarks},${value.Fluctuation},${`${value.SpurtTime}`.replace('null', '')},${value.JockeyID},${value.interval}`
+                        data += `,${value.Venue},${value.HoldMonth},${value.Hold},${value.Day},${value.Range},${value.Ground},${value.GroundCondition},${value.Weather},${value.Weight},${value.TrainerID},${value.HorseGender},${value.HorseWeight},${value.HorseNo},${value.HorseAge},${value.Remarks},${value.RaceRemarks},${value.Fluctuation},${`${value.SpurtTime}`.replace('null', '')},${value.JockeyID != value.JockeyID ? 0 : value.JockeyID},${value.interval}`
                     }
                 }
                 const empty = ',,,,,,,,,,,,,,,,,,,,,'

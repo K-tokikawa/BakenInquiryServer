@@ -30,6 +30,7 @@ import DeletePredictRecord from '../../sql/query/DeletePredictRecord'
 import IFPredictRows from '../../IF/IFPredictRows'
 import PrmPredictRegister from '../../sql/param/PrmPredictRegister'
 import RegisterPredict from '../../sql/query/RegisterPredict'
+import { Console } from 'console'
 
 export default async function process(Year: number, Month: number, HoldDay: number, Venue: number[], Round: number[], hashoff = false) {
     const shell = new PythonShell('./src/python/whilepredict.py')
@@ -70,6 +71,7 @@ async function GetAnalysisData(Year: number, Month: number, HoldDay: number, Ven
             Hold = 1
         }
 
+
         let strHold = Hold < 10 ? `0${Hold}` : `${Hold}`
 
         const sqlDay = new GetVenueMaxDay(Year, VenueNum, Hold)
@@ -80,7 +82,7 @@ async function GetAnalysisData(Year: number, Month: number, HoldDay: number, Ven
             Day = 1
         }
 
-        let strDay = Day< 10 ? `0${Day}` : `${Day}`
+        let strDay = Day < 10 ? `0${Day}` : `${Day}`
 
         if (!CheckHold(Year, VenueNum, strHold, strDay)) {
             Hold += 1
@@ -93,7 +95,7 @@ async function GetAnalysisData(Year: number, Month: number, HoldDay: number, Ven
             const strRound = Round < 10 ? `0${Round}` : `${Round}`
             const VenueCode = ClassRace.VenueCode[VenueNum]
             let strRaceID = `${Year}${VenueCode}${strHold}${strDay}${strRound}`
-
+            console.log(strRaceID)
             const memberurl = `https://race.netkeiba.com/race/shutuba.html?race_id=${strRaceID}&rf=race_submenu`
 
             const axios: AxiosBase = new AxiosBase(memberurl)
@@ -202,12 +204,10 @@ async function RegisterData(lstClassRace: ClassRace[])
     await initsql.Execsql()
     const HorseIDsql = new GetHorseIDs(param)
     const horseIDs = (await HorseIDsql.Execsql()).map(x => {return x.HorseID})
-    
 
     const studyparam = new PrmStudyData(horseIDs)
     const studydatasql = new GetRaceHorseStudyData(studyparam)
     const studydata = await studydatasql.Execsql() as EntRaceHorseStudyData[]
-
     const mgr = new MgrRaceData(studydata, predictRaceID)
     await mgr.dicCreate()
     await mgr.Register()
@@ -434,6 +434,7 @@ async function CheckHold(Year: number, VenueNum: number, strHold: string, strDay
     const memberurl = `https://race.netkeiba.com/race/shutuba.html?race_id=${checkRaceID}&rf=race_submenu`
     const axios: AxiosBase = new AxiosBase(memberurl)
     const page = await axios.GET() as Buffer
+
     const pageElement = iconv.decode(page, 'eucjp')
     return pageElement.match(/RaceName/)
 }
@@ -504,25 +505,24 @@ async function GetNodeTree(
             let Mark = ''
             if (rank == 1) {
                 Mark = '◎'
-                txt += `${Mark} ${val.HorseNo} ${datas[val.HorseNo - 1].data.Name}\n`
                 }
             if (rank == 2) {
                 Mark = '〇'
-                txt += `${Mark} ${val.HorseNo} ${datas[val.HorseNo - 1].data.Name}\n`
                 }
             if (rank == 3) {
                 Mark = '▲'
-                txt += `${Mark} ${val.HorseNo} ${datas[val.HorseNo - 1].data.Name}\n`
                 }
             if (rank == 4) {
                 Mark = '△'
-                txt += `${Mark} ${val.HorseNo} ${datas[val.HorseNo - 1].data.Name}\n`
                 }
             if (rank > 4) {
                 if (val.predict - result[3].predict < 0.25) {
                     Mark = '△'
-                    txt += `${Mark} ${val.HorseNo} ${datas[val.HorseNo - 1].data.Name}\n`
                 }
+            }
+            if (Mark != '')
+            {
+                txt += `${Mark} ${val.HorseNo} ${datas[val.HorseNo - 1].data.Name} ${val.predict}\n`
             }
             datas[val.HorseNo - 1].data.Rank = `${rank}`
             datas[val.HorseNo - 1].data.Mark = Mark

@@ -57,7 +57,7 @@ export default async function PredictRegister(startData: Date | null, finishData
             lstRaceID,
             dicRace,
             dicHorse,
-            shell,
+            [shell],
             ProgressBar
             )
         const Predictprogress = ProgressBar(Object.keys(predictrows).length, 20, 'Predict')
