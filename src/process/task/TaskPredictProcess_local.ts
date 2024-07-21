@@ -27,10 +27,8 @@ async function BatProcess(){
     const Year: number = date.getFullYear()
     const Month: number = date.getMonth() + 1
     const HoldDay: number = date.getDate()
-    const Venue:number[] = [2, 3, 10]
-    const Round: number[] = [11]
-    console.log(HoldDay)
-    const results = await predictprocess(Year, Month, HoldDay, Venue, Round, true)
+    const Round: number[] = [12]
+    const results = await predictprocess(Year, Month, HoldDay, Round, true)
     let resulttext = ''
     for (const result of Object.keys(results.root)) {
         resulttext += results.root[Number(result)].data.text

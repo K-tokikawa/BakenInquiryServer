@@ -34,9 +34,9 @@ export default class FileUtil {
             fs.unlinkSync(filePath)
         }
     }
-    public static ReadFileSync(filePath: string): string[] {
+    public static ReadFileSync(filePath: string, code: string): string[] {
         const response = fs.readFileSync(filePath)
-        const pageElement = iconv.decode(response as Buffer, 'eucjp')
+        const pageElement = iconv.decode(response as Buffer, code)
         const page = pageElement.split('\r\n');
         return page
     }

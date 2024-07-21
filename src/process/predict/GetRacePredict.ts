@@ -30,24 +30,24 @@ import DeletePredictRecord from '../../sql/query/DeletePredictRecord'
 import IFPredictRows from '../../IF/IFPredictRows'
 import PrmPredictRegister from '../../sql/param/PrmPredictRegister'
 import RegisterPredict from '../../sql/query/RegisterPredict'
-import { Console } from 'console'
+import GetRaceCode from './GetRaceCode'
 
-export default async function process(Year: number, Month: number, HoldDay: number, Venue: number[], Round: number[], hashoff = false) {
+export default async function process(Year: number, Month: number, HoldDay: number, Round: number[], hashoff = false) {
     const shell = new PythonShell('./src/python/whilepredict.py')
     const shell_1 = new PythonShell('./src/python/whilepredict.py')
     const shell_2 = new PythonShell('./src/python/whilepredict.py')
     const shell_3 = new PythonShell('./src/python/whilepredict.py')
     const shell_4 = new PythonShell('./src/python/whilepredict.py')
-    const AnalysisData = await GetAnalysisData(Year, Month, HoldDay, Venue, Round)
+    const AnalysisData = await GetAnalysisData(Year, Month, HoldDay, Round)
     const predictRacedata = await RegisterData(AnalysisData)
     const predictdata = await CreateRacePredictData(predictRacedata, [shell, shell_1, shell_2, shell_3, shell_4])
     const res = await GetNodeTree(predictdata, predictRacedata.cancelHorseNo, hashoff, shell)
     return res
 }
 
-async function GetAnalysisData(Year: number, Month: number, HoldDay: number, Venue: number[], Rounds: number[])
+async function GetAnalysisData(Year: number, Month: number, HoldDay: number, Rounds: number[])
 {
-    const raceIDparam = new PrmStudyData([], Year, Month, HoldDay, Venue)
+    const raceIDparam = new PrmStudyData([], Year, Month, HoldDay)
     const raceIDsql = new GetRace(raceIDparam)
     const registerdRace = await raceIDsql.Execsql()
 
@@ -62,55 +62,30 @@ async function GetAnalysisData(Year: number, Month: number, HoldDay: number, Ven
 
     const lstClassRace: ClassRace[] = []
 
-    for (const VenueNum of Venue) {
-
-        const sqlHold = new GetVenueMaxHold(Year, VenueNum)
-        const lstHold = await sqlHold.Execsql()
-        let Hold = lstHold[0].Hold
-        if (Number.isNaN(Hold)) {
-            Hold = 1
-        }
-
-
-        let strHold = Hold < 10 ? `0${Hold}` : `${Hold}`
-
-        const sqlDay = new GetVenueMaxDay(Year, VenueNum, Hold)
-        const lstDay = await sqlDay.Execsql()
-
-        let Day = lstDay[0].Day + 1
-        if (Number.isNaN(Day)) {
-            Day = 1
-        }
-
-        let strDay = Day < 10 ? `0${Day}` : `${Day}`
-
-        if (!CheckHold(Year, VenueNum, strHold, strDay)) {
-            Hold += 1
-            Day = 1
-            strHold = Hold < 10 ? `0${Hold}` : `${Hold}`
-            strDay = '01'
-        }
-        
+    console.log(`${Year}${Month}${HoldDay}`)
+    var races = GetRaceCode(`${Year}${Month < 10 ? `0${Month}` : `${Month}`}${HoldDay < 10 ? `0${HoldDay}` : HoldDay}`)
+    for (var race of races) {
         for (const Round of Rounds) {
             const strRound = Round < 10 ? `0${Round}` : `${Round}`
-            const VenueCode = ClassRace.VenueCode[VenueNum]
-            let strRaceID = `${Year}${VenueCode}${strHold}${strDay}${strRound}`
-            console.log(strRaceID)
+            let strRaceID = `${race}${strRound}`
             const memberurl = `https://race.netkeiba.com/race/shutuba.html?race_id=${strRaceID}&rf=race_submenu`
-
+    
             const axios: AxiosBase = new AxiosBase(memberurl)
             const page = await axios.GET() as Buffer
             
             const pageElement = iconv.decode(page, 'eucjp')
-
-
+    
             const pages = pageElement.split('\n')
+            var VenueCode  = race.substring(9, 10)
+            var Hold = Number(race.substring(5, 6))
+            var Day = Number(race.substring(7, 8))
             const racedata: ClassRace = PageAnalysis(pages, 0, strRaceID, VenueCode, Year, Hold, Day, Month, HoldDay, Round)
-
+    
             if (racedata.Ground == 3) continue;
-
+    
             lstClassRace.push(racedata)
         }
+
     }
     return lstClassRace
 }

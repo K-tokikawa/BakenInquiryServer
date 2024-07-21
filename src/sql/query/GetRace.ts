@@ -18,7 +18,6 @@ where
     RI.Year = ${this.parameter?.param1}
     and RI.HoldMonth = ${this.parameter?.param2}
     and RI.HoldDay = ${this.parameter?.param3}
-    and RI.Venue in (${this.parameter?.param4})
 `
         return await this.ExecGet(sql)
     }
