@@ -68,64 +68,67 @@ export async function GetPredictData(
     const predictrows: IFPredictRows = {}
     for (const strRaceID of Object.keys(dicRace)) {
         const RaceID = Number(strRaceID)
-        const info = dicRace[RaceID]
-        predictrows[RaceID] = {
-            Round: info.Round,
-            Ground: `${info.Ground}`,
-            Venue: `${info.VenueName}`,
-            Horse: []
-        }
-        if (dicpredict[RaceID] == undefined) {
-            dicpredict[RaceID] = {
-                info: `,${info.Venue},${info.Range},${info.Ground},${info.GroundCondition},${info.Weather},${info.Hold},${info.Day}`,
-                Horses:[]
+        try {
+            const info = dicRace[RaceID]
+            predictrows[RaceID] = {
+                Round: info.Round,
+                Ground: `${info.Ground}`,
+                Venue: `${info.VenueName}`,
+                Horse: []
             }
-        }
-        for (let no = 1; no <= 18; no++ ){
-            dicpredict[RaceID].Horses[no]={
-                horsepredictdata:',None,None,None,None,None',
-                rank:-1,
-                Name: '',
-                HorseID: -1,
-                cancel: false
-            }
-        }
-        const Horse = dicHorse[RaceID]
-
-        const predictprogress = multiProgressber().addProgress(Object.keys(Horse).length, 20, 'predict')
-        for (const strHorseID of Object.keys(Horse)) {
-            predictprogress.addCount(1)
-            try {
-
-                const HorseID = Number(strHorseID)
-                const Horsevalue = Horse[HorseID]
-                const HorsePredictData = await GetHorsePredictData(
-                    RaceID,
-                    HorseID,
-                    Horsevalue,
-                    info,
-                    blooddata,
-                    dicAptitude,
-                    dicAchievement,
-                    dicRotation,
-                    shell
-                    )
-                dicpredict[RaceID].Horses[Horsevalue.HorseNo] = {
-                    horsepredictdata: HorsePredictData,
-                    rank: Horsevalue.Rank,
-                    Name: Horsevalue.HorseName,
-                    HorseID: HorseID,
-                    cancel: Horsevalue.cancel
+            if (dicpredict[RaceID] == undefined) {
+                dicpredict[RaceID] = {
+                    info: `,${info.Venue},${info.Range},${info.Ground},${info.GroundCondition},${info.Weather},${info.Hold},${info.Day}`,
+                    Horses:[]
                 }
             }
-            catch(e) {
-                // console.log(e)
+            for (let no = 1; no <= 18; no++ ){
+                dicpredict[RaceID].Horses[no]={
+                    horsepredictdata:',None,None,None,None,None',
+                    rank:-1,
+                    Name: '',
+                    HorseID: -1,
+                    cancel: false
+                }
             }
+            const Horse = dicHorse[RaceID]
+
+            const predictprogress = multiProgressber().addProgress(Object.keys(Horse).length, 20, 'predict')
+            for (const strHorseID of Object.keys(Horse)) {
+                predictprogress.addCount(1)
+                try {
+    
+                    const HorseID = Number(strHorseID)
+                    const Horsevalue = Horse[HorseID]
+                    const HorsePredictData = await GetHorsePredictData(
+                        RaceID,
+                        HorseID,
+                        Horsevalue,
+                        info,
+                        blooddata,
+                        dicAptitude,
+                        dicAchievement,
+                        dicRotation,
+                        shell
+                        )
+                    dicpredict[RaceID].Horses[Horsevalue.HorseNo] = {
+                        horsepredictdata: HorsePredictData,
+                        rank: Horsevalue.Rank,
+                        Name: Horsevalue.HorseName,
+                        HorseID: HorseID,
+                        cancel: Horsevalue.cancel
+                    }
+                }
+                catch(e) {
+                    console.log(e)
+                }
+            }
+            predictrows[RaceID].Horse = await GetPredictRows(RaceID, dicpredict)
+            predictprogress.del()
+            Raceprogress.addCount(1)
+        } catch (e) {
+            // console.log(e)
         }
-        
-        predictrows[RaceID].Horse = await GetPredictRows(RaceID, dicpredict)
-        predictprogress.del()
-        Raceprogress.addCount(1)
     }
 
     return predictrows

@@ -20,6 +20,10 @@ export function pricecomma(num: number) {
     }
     return result
 }
+export function formatNumber(num: number): string {
+    // 数字が10以下の場合は二桁にする
+    return num.toString().padStart(2, '0');
+}
 
 export function zenkaku2Hankaku(str: string | number) {
     if (typeof (str) == 'number') {

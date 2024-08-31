@@ -63,7 +63,7 @@ async function GetAnalysisData(Year: number, Month: number, HoldDay: number, Rou
     const lstClassRace: ClassRace[] = []
 
     console.log(`${Year}${Month}${HoldDay}`)
-    var races = GetRaceCode(`${Year}${Month < 10 ? `0${Month}` : `${Month}`}${HoldDay < 10 ? `0${HoldDay}` : HoldDay}`)
+    var races = await GetRaceCode(`${Year}${Month < 10 ? `0${Month}` : `${Month}`}${HoldDay < 10 ? `0${HoldDay}` : HoldDay}`)
     for (var race of races) {
         for (const Round of Rounds) {
             const strRound = Round < 10 ? `0${Round}` : `${Round}`
@@ -76,9 +76,9 @@ async function GetAnalysisData(Year: number, Month: number, HoldDay: number, Rou
             const pageElement = iconv.decode(page, 'eucjp')
     
             const pages = pageElement.split('\n')
-            var VenueCode  = race.substring(9, 10)
-            var Hold = Number(race.substring(5, 6))
-            var Day = Number(race.substring(7, 8))
+            var VenueCode  = race.substring(5, 6)
+            var Hold = Number(race.substring(7, 8))
+            var Day = Number(race.substring(9, 10))
             const racedata: ClassRace = PageAnalysis(pages, 0, strRaceID, VenueCode, Year, Hold, Day, Month, HoldDay, Round)
     
             if (racedata.Ground == 3) continue;
