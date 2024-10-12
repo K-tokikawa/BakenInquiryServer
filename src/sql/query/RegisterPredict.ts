@@ -34,6 +34,6 @@ export default class RegisterPredict extends SQLBase<number>
             // line.replace(/null/, '')
             lines.push(line)
         })
-        await this.ExecBulkInsert('Predict', lines, `D:\\data\\${filename}.csv`)
+        await this.ExecBulkInsert('Predict', lines, `E:\\data\\${filename}.csv`)
     }
 }

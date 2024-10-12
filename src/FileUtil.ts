@@ -8,24 +8,28 @@ export default class FileUtil {
         lines: string[],
         filePath: string
     ) {
-        const ProgressBar = simpleProgress()
-        const progress = ProgressBar(lines.length, 20, 'FileOutPut')
-        let index = 0
-        for (let line of lines){
-            progress(1)
-            line = line + '\n'
-            const arybuf = Encoding.convert(line, {
-                from: 'UNICODE',
-                to: 'UTF8',
-                type: 'arraybuffer',
-            });
-            if (index == 0) {
-                fs.writeFileSync(filePath, Buffer.from(arybuf));
+        try {
+            const ProgressBar = simpleProgress()
+            const progress = ProgressBar(lines.length, 20, 'FileOutPut')
+            let index = 0
+            for (let line of lines){
+                progress(1)
+                line = line + '\n'
+                const arybuf = Encoding.convert(line, {
+                    from: 'UNICODE',
+                    to: 'UTF8',
+                    type: 'arraybuffer',
+                });
+                if (index == 0) {
+                    fs.writeFileSync(filePath, Buffer.from(arybuf));
+                }
+                else {
+                    fs.appendFileSync(filePath, Buffer.from(arybuf));
+                }
+                index++
             }
-            else {
-                fs.appendFileSync(filePath, Buffer.from(arybuf));
-            }
-            index++
+        } catch(e) {
+            console.log(e)
         }
     }
 

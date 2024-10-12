@@ -39,6 +39,6 @@ INSERT INTO RaceInfomation VALUES (
             line.replace('null', '')
             lines.push(line)
         })
-        this.ExecBulkInsert('RaceInfomation', lines, `D:\\data\\${filename}.csv`)
+        this.ExecBulkInsert('RaceInfomation', lines, `E:\\data\\${filename}.csv`)
     }
 }

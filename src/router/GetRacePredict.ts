@@ -7,7 +7,7 @@ router.post('/GetRacePredict', function (req, res, next) {
     const Month: number = req.body.Month
     const HoldDay: number = req.body.HoldDay
     const Venue:number[] = req.body.Venue
-    const Round: number[] = req.body.Rounds
+    const Round: number = req.body.Rounds
     console.log(`${Year}_${Month}_${HoldDay}`)
     process(Year, Month, HoldDay, Venue, Round)
         .then(result => {

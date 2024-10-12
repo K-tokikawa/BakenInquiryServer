@@ -16,8 +16,9 @@ export default class ClassRace{
     private m_Weather: number
     private m_GroundCondition: number
     private m_RaceMasterID: number
+    private m_RaceTime: string
     private m_Horse: ClassHorse[]
-    constructor(ID: number,RaceID: string,Venue: string,Year: number,Hold: number,Day: number,HoldMonth: number,HoldDay: number,Round: number,Range: number,Direction: number,Ground: number,Weather: number,GroundCondition: number,RaceMasterID: number) {
+    constructor(ID: number,RaceID: string,Venue: string,Year: number,Hold: number,Day: number,HoldMonth: number,HoldDay: number,Round: number,Range: number,Direction: number,Ground: number,Weather: number,GroundCondition: number,RaceMasterID: number, RaceTime: string) {
         this.m_ID = ID
         this.m_RaceID = RaceID
         this.m_Venue = Venue
@@ -33,6 +34,7 @@ export default class ClassRace{
         this.m_Weather = Weather
         this.m_GroundCondition = GroundCondition
         this.m_RaceMasterID = RaceMasterID
+        this.m_RaceTime = RaceTime
         this.m_Horse = []
     }
     public get ID() { return this.m_ID}
@@ -50,6 +52,7 @@ export default class ClassRace{
     public get Weather() { return this.m_Weather}
     public get GroundCondition() { return this.m_GroundCondition}
     public get RaceMasterID() { return this.m_RaceMasterID}
+    public get RaceTime() { return this.m_RaceTime}
     public get Horse() { return this.m_Horse}
     public static RaceVenue: {
         [no: number]: string

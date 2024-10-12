@@ -31,6 +31,7 @@ import IFPredictRows from '../../IF/IFPredictRows'
 import PrmPredictRegister from '../../sql/param/PrmPredictRegister'
 import RegisterPredict from '../../sql/query/RegisterPredict'
 import GetRaceCode from './GetRaceCode'
+import FileUtil from '../../FileUtil'
 
 export default async function process(Year: number, Month: number, HoldDay: number, Round: number[], hashoff = false) {
     const shell = new PythonShell('./src/python/whilepredict.py')
@@ -56,7 +57,12 @@ async function GetAnalysisData(Year: number, Month: number, HoldDay: number, Rou
         const deletesql = new PrmStudyData(registerdRaceIDs)
         const sql = new DeleteRaceRecord(deletesql)
         const sql_Horse = new DeleteUpdateRaceHorseRecord(deletesql)
-        sql.Execsql()
+        try {
+            sql.Execsql()
+        } catch(e) {
+            console.log(e)
+        }
+
         sql_Horse.Execsql()
     }
 
@@ -79,13 +85,24 @@ async function GetAnalysisData(Year: number, Month: number, HoldDay: number, Rou
             var VenueCode  = race.substring(5, 6)
             var Hold = Number(race.substring(7, 8))
             var Day = Number(race.substring(9, 10))
+
             const racedata: ClassRace = PageAnalysis(pages, 0, strRaceID, VenueCode, Year, Hold, Day, Month, HoldDay, Round)
     
             if (racedata.Ground == 3) continue;
-    
-            lstClassRace.push(racedata)
+            const raceTime = convertToDate(racedata.RaceTime)
+            const now = new Date();
+            const plusOne = new Date()
+            plusOne.setHours(plusOne.getHours() + 1); // 現在の時間に1時間を加算
+            const referenceTime = new Date();
+            referenceTime.setHours(9, 0, 0, 0)
+            if (Rounds.length > 1) {
+                if (raceTime > now && raceTime < plusOne) {
+                    lstClassRace.push(racedata)
+                }
+            } else {
+                lstClassRace.push(racedata)
+            }
         }
-
     }
     return lstClassRace
 }
@@ -116,7 +133,22 @@ async function RegisterData(lstClassRace: ClassRace[])
         RaceID++
         predictRaceID.push(RaceID)
 
-        const param = new PrmRaceInfo(RaceID, racedata.RaceID, racedata.Venue, racedata.Year, racedata.Hold, racedata.Day, racedata.Round, racedata.Range, racedata.Direction, racedata.Ground, racedata.Weather, racedata.GroundCondition, racedata.HoldMonth, racedata.HoldDay)
+        const param = new PrmRaceInfo(
+            RaceID,
+            racedata.RaceID,
+            racedata.Venue,
+            racedata.Year,
+            racedata.Hold,
+            racedata.Day,
+            racedata.Round,
+            racedata.Range,
+            racedata.Direction,
+            racedata.Ground,
+            racedata.Weather,
+            racedata.GroundCondition,
+            racedata.HoldMonth,
+            racedata.HoldDay
+        )
         raceparam.push(param)
 
         for (const horse of racedata.Horse) {
@@ -216,8 +248,12 @@ function PageAnalysis(pages: string[], ID: number, RaceID: string, Venue: string
     let GateNo: number = 0
     let HorseNo: number = 0
     let cancel: boolean = false
+    let raceTime = ''
     for (const line of pages) {
         if (line.match(/span class="Turf"/)) {
+            if (line.match(/.*発走/)) {
+                raceTime = String(line.match(/.*発走/)?.[0]).replace("発走", "")
+            }
             // 距離
             if (line.match(/\d{4}/)) {
                 range = Number(line.match(/\d{4}/)?.[0])
@@ -364,7 +400,8 @@ function PageAnalysis(pages: string[], ID: number, RaceID: string, Venue: string
         ground,
         weather,
         groundcondition,
-        0
+        0,
+        raceTime
     )
     for (const strGateNo of Object.keys(dicHorse)) {
         const GateNo = Number(strGateNo)
@@ -413,7 +450,12 @@ async function CheckHold(Year: number, VenueNum: number, strHold: string, strDay
     const pageElement = iconv.decode(page, 'eucjp')
     return pageElement.match(/RaceName/)
 }
-
+function convertToDate(time: string): Date {
+    const [hours, minutes] = time.split(':').map(Number);
+    const now = new Date();
+    now.setHours(hours, minutes, 0, 0); // 時、分、秒、ミリ秒を設定
+    return now;
+}
 async function GetNodeTree(
     predictdata: IFPredictRows,
     cancelHorseNo: {[RaceID: number]: number[]},
@@ -530,7 +572,6 @@ async function GetNodeTree(
     await predictsql.BulkInsert('predict')
 
     return {
-        'root':
-            tree
+        'root': tree
     }
 }
